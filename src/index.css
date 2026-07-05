@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+/* @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');*/
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Space Grotesk", sans-serif;
+
+  --color-slate-950: #0B0E14;
+  --color-slate-900: #151921;
+  --color-slate-800: #1e2530;
+  --color-slate-700: #2D3748;
+  --color-slate-600: #4a5568;
+  --color-slate-400: #94A3B8;
+
+  --color-rose-600: #3B82F6;
+  --color-rose-500: #3B82F6;
+  --color-rose-400: #60a5fa;
+  --color-rose-300: #93c5fd;
+  
+  --shadow-bento: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 2px 8px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom layout/helper styles matching Design HTML precisely */
+.bento-card {
+  background: #151921;
+  border: 1px solid #2D3748;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease-in-out;
+  box-shadow: var(--shadow-bento);
+}
+
+.bento-card:hover {
+  border-color: #3B82F6;
+  box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.15);
+}
+
+.card-title {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #94A3B8;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.log-entry {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px 0;
+  border-bottom: 1px solid #1e293b;
+  color: #A5F3FC;
+}
+
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #2D3748;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #1e2530;
+  transition: all 0.15s ease-in-out;
+  color: #e2e8f0;
+}
+
+.btn-icon:hover {
+  background: #2D3748;
+  border-color: #3B82F6;
+  color: white;
+}
+
+/* Custom scrollbar matching styling theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0E14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2D3748;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3B82F6;
+}
+
+/* Print CSS to isolate printable reports and optimize formatting */
+@media print {
+  /* Hide everything except the designated print container */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  #root > *:not(.printable-area),
+  #app-header,
+  #app-sidebar,
+  .no-print {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+  
+  /* Show only the printable container */
+  .printable-area, .printable-area * {
+    visibility: visible !important;
+    display: block !important;
+  }
+
+  .printable-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    background: white !important;
+    color: black !important;
+    padding: 20px !important;
+    font-family: sans-serif !important;
+  }
+
+  /* Optimize tables inside the print report */
+  .printable-area table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .printable-area tr {
+    display: table-row !important;
+    page-break-inside: avoid !important;
+  }
+
+  .printable-area th, .printable-area td {
+    display: table-cell !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 8px 12px !important;
+    text-align: left !important;
+    font-size: 11px !important;
+    color: #0f172a !important;
+  }
+
+  .printable-area th {
+    background-color: #f1f5f9 !important;
+    font-weight: 700 !important;
+  }
+  
+  .printable-area .status-pill {
+    background: transparent !important;
+    border: 1px solid #94a3b8 !important;
+    color: #334155 !important;
+    padding: 2px 6px !important;
+  }
+}

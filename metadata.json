@@ -1,0 +1,10 @@
+{
+  "name": "Kynren Tech OPS",
+  "description": "Streamline technical logistics, monitor show operations in real time, manage assets, switches, racks, topology, consumables, helpdesk tickets, and operation tools for Kynren Tech OPS.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

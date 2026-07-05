@@ -1,0 +1,384 @@
+[
+  {
+    "deviceId": "agent_container_host",
+    "token": "tok_85ejsjbmdecg5ces7lkho5",
+    "hostname": "11A-MAC-551249.local",
+    "osName": "macOS",
+    "osVersion": "25.5.0",
+    "firstSeen": "2026-07-05T20:44:24.149Z",
+    "lastSeen": "2026-07-05T20:56:47.167Z",
+    "status": "online",
+    "pollingInterval": 8888,
+    "enabledModules": [
+      "system",
+      "hardware",
+      "network",
+      "software",
+      "services",
+      "processes",
+      "performance"
+    ],
+    "logLevel": "info",
+    "alertThresholds": {
+      "cpuPercent": 85,
+      "memoryPercent": 90,
+      "diskPercent": 95
+    },
+    "performanceHistory": [
+      {
+        "timestamp": "2026-07-05T20:44:24.164Z",
+        "cpu": 33,
+        "memory": 99,
+        "disk": 99
+      },
+      {
+        "timestamp": "2026-07-05T20:50:24.731Z",
+        "cpu": 33,
+        "memory": 98,
+        "disk": 98
+      },
+      {
+        "timestamp": "2026-07-05T20:54:20.597Z",
+        "cpu": 33,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-05T20:55:24.976Z",
+        "cpu": 33,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-05T20:56:47.167Z",
+        "cpu": 33,
+        "memory": 99,
+        "disk": 35
+      }
+    ],
+    "commands": [],
+    "alerts": [
+      {
+        "id": "alert_qku6a7w",
+        "timestamp": "2026-07-05T20:54:20.597Z",
+        "type": "warning",
+        "title": "High Memory Usage",
+        "message": "System memory capacity nearly full: 99% occupied.",
+        "resolved": false
+      }
+    ],
+    "systemInfo": {
+      "hostname": "11A-MAC-551249.local",
+      "domain": "LocalNetwork",
+      "os": "macOS",
+      "edition": "Standard",
+      "buildNumber": "25.5.0",
+      "kernelVersion": "25.5.0",
+      "architecture": "arm64",
+      "timezone": "Europe/London",
+      "locale": "C.UTF-8",
+      "uptime": 271367,
+      "lastBoot": "2026-07-02T17:33:59.980Z",
+      "loggedUser": "SETH",
+      "manufacturer": "Apple Inc.",
+      "model": "Mac15,3",
+      "serialNumber": "N/A",
+      "biosVersion": "v1.0",
+      "firmwareVersion": "1.0.0"
+    },
+    "hardware": {
+      "cpu": {
+        "brand": "Apple M3",
+        "cores": 8,
+        "logical": 8,
+        "frequency": "2400 MHz"
+      },
+      "memory": {
+        "total": 17179869184,
+        "used": 17051549696
+      },
+      "disks": [
+        {
+          "drive": "/",
+          "total": 107374182400,
+          "used": 37580963840,
+          "health": "OK"
+        }
+      ],
+      "gpu": "Integrated Graphics Controller",
+      "motherboard": "Motherboard Core Engine",
+      "power": {
+        "state": "AC Connected"
+      },
+      "peripherals": {
+        "usb": [
+          "Root USB Hub 3.0",
+          "Generic Input Device"
+        ],
+        "bluetooth": [],
+        "printers": [
+          "Network Generic PDF Printer"
+        ],
+        "monitors": [
+          "Standard Full HD Display [1920x1080]"
+        ]
+      }
+    },
+    "network": {
+      "hostname": "11A-MAC-551249.local",
+      "ipv4": [
+        "127.0.0.1",
+        "192.168.1.144"
+      ],
+      "ipv6": [
+        "::1",
+        "fe80::1",
+        "fe80::10aa:b2a6:1574:d04e",
+        "2a00:23c4:920b:f801:1c4f:86f:9170:5f3d",
+        "2a00:23c4:920b:f801:2d95:1b10:a679:1e45",
+        "fe80::28df:4bff:fe5c:a227",
+        "fe80::1f9d:d6f0:64b4:f116",
+        "fe80::d910:edad:cda4:aec2",
+        "fe80::b882:9527:f932:592",
+        "fe80::ce81:b1c:bd2c:69e",
+        "fe80::6236:86b5:6ec3:eafa",
+        "fe80::f142:1473:211c:970c",
+        "fe80::fd07:8d70:ea8f:8840",
+        "fe80::983b:7819:ab77:9881"
+      ],
+      "publicIp": "81.132.196.36",
+      "macAddresses": [
+        "c6:1e:80:ab:5f:1c",
+        "2a:df:4b:5c:a2:27"
+      ],
+      "interfaces": [
+        {
+          "name": "lo0",
+          "mac": "N/A",
+          "ipv4": [
+            "127.0.0.1"
+          ],
+          "ipv6": [
+            "::1",
+            "fe80::1"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "en0",
+          "mac": "c6:1e:80:ab:5f:1c",
+          "ipv4": [
+            "192.168.1.144"
+          ],
+          "ipv6": [
+            "fe80::10aa:b2a6:1574:d04e",
+            "2a00:23c4:920b:f801:1c4f:86f:9170:5f3d",
+            "2a00:23c4:920b:f801:2d95:1b10:a679:1e45"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "awdl0",
+          "mac": "2a:df:4b:5c:a2:27",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::28df:4bff:fe5c:a227"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "llw0",
+          "mac": "2a:df:4b:5c:a2:27",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::28df:4bff:fe5c:a227"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "utun0",
+          "mac": "N/A",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::1f9d:d6f0:64b4:f116"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "utun1",
+          "mac": "N/A",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::d910:edad:cda4:aec2"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "utun2",
+          "mac": "N/A",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::b882:9527:f932:592"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "utun3",
+          "mac": "N/A",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::ce81:b1c:bd2c:69e"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "utun5",
+          "mac": "N/A",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::6236:86b5:6ec3:eafa"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "utun6",
+          "mac": "N/A",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::f142:1473:211c:970c"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "utun7",
+          "mac": "N/A",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::fd07:8d70:ea8f:8840"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        },
+        {
+          "name": "utun8",
+          "mac": "N/A",
+          "ipv4": [],
+          "ipv6": [
+            "fe80::983b:7819:ab77:9881"
+          ],
+          "type": "Ethernet",
+          "status": "up",
+          "speed": "1 Gbps"
+        }
+      ],
+      "gateway": "10.12.10.1",
+      "dnsServers": [
+        "8.8.8.8",
+        "1.1.1.1"
+      ],
+      "dhcpServer": "10.12.10.1",
+      "subnetMask": "255.255.255.0",
+      "routingTable": [
+        "0.0.0.0/0 via 10.12.10.1 dev eth0"
+      ],
+      "arpCache": []
+    },
+    "software": [
+      {
+        "name": "Node.js",
+        "version": "v24.15.0",
+        "publisher": "Node.js Foundation"
+      },
+      {
+        "name": "TypeScript",
+        "version": "5.8.2",
+        "publisher": "Microsoft"
+      },
+      {
+        "name": "Git",
+        "version": "2.43.0",
+        "publisher": "Git SCM"
+      },
+      {
+        "name": "Docker Engine",
+        "version": "24.0.7",
+        "publisher": "Docker Inc."
+      },
+      {
+        "name": "Python3",
+        "version": "3.10.12",
+        "publisher": "Python Software Foundation"
+      }
+    ],
+    "services": [
+      {
+        "name": "nginx.service",
+        "status": "running",
+        "startupType": "automatic",
+        "description": "Nginx High Performance Web Server"
+      },
+      {
+        "name": "ssh.service",
+        "status": "running",
+        "startupType": "automatic",
+        "description": "OpenBSD Secure Shell Server"
+      },
+      {
+        "name": "dbus.service",
+        "status": "running",
+        "startupType": "automatic",
+        "description": "D-Bus System Message Bus"
+      },
+      {
+        "name": "cron.service",
+        "status": "running",
+        "startupType": "automatic",
+        "description": "Regular Background Program Scheduler"
+      }
+    ],
+    "processes": [
+      {
+        "name": "node",
+        "pid": 81567,
+        "cpu": 1.2,
+        "memory": 4.5
+      },
+      {
+        "name": "systemd",
+        "pid": 1,
+        "cpu": 0.1,
+        "memory": 0.2
+      },
+      {
+        "name": "dockerd",
+        "pid": 820,
+        "cpu": 0.5,
+        "memory": 1.8
+      }
+    ],
+    "computerName": "11A-MAC-551249.local",
+    "architecture": "arm64",
+    "agentVersion": "2.4.1"
+  }
+]

@@ -1,0 +1,347 @@
+{
+  "entities": {
+    "UserPreferences": {
+      "title": "UserPreferences",
+      "description": "Preferences for the current user",
+      "type": "object",
+      "properties": {
+        "theme": { "type": "string" },
+        "headerColor": { "type": "string" },
+        "bodyColor": { "type": "string" },
+        "sidebarColor": { "type": "string" },
+        "headerPosition": { "type": "string" },
+        "clientIp": { "type": "string" },
+        "displayName": { "type": "string" },
+        "profileImage": { "type": "string" }
+      },
+      "required": ["theme", "headerColor", "bodyColor", "sidebarColor", "headerPosition", "clientIp", "displayName", "profileImage"]
+    },
+    "Asset": {
+      "title": "Asset",
+      "description": "IT and production assets",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string" },
+        "serialNumber": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "coordinates": { "type": "object" },
+        "ipAddress": { "type": "string" },
+        "lastSeen": { "type": "string" },
+        "assetTag": { "type": "string" },
+        "featuredImage": { "type": "string" },
+        "galleryImages": { "type": "array" },
+        "location": { "type": "string" },
+        "network": { "type": "string" },
+        "comments": { "type": "string" },
+        "technicianInCharge": { "type": "string" },
+        "groupInCharge": { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "model": { "type": "string" },
+        "deviceType": { "type": "string" },
+        "batteryLevel": { "type": "number" },
+        "registrationDate": { "type": "string" }
+      },
+      "required": ["id", "name", "category", "status", "serialNumber", "assignedTo", "coordinates", "ipAddress", "lastSeen"]
+    },
+    "Consumable": {
+      "title": "Consumable",
+      "description": "Inventory of consumables",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "quantity": { "type": "number" },
+        "threshold": { "type": "number" },
+        "unit": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "name", "category", "quantity", "threshold", "unit", "status"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "Support tickets",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string" },
+        "priority": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "description", "category", "status", "priority", "assignedTo", "createdBy", "createdAt"]
+    },
+    "SignalLog": {
+      "title": "SignalLog",
+      "description": "Signal and system logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "level": { "type": "string" },
+        "source": { "type": "string" },
+        "message": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "level", "source", "message"]
+    },
+    "SwitchDevice": {
+      "title": "SwitchDevice",
+      "description": "Network switch device",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "ip": { "type": "string" },
+        "status": { "type": "string" },
+        "latency": { "type": "number" },
+        "rackId": { "type": "string" },
+        "rackPosition": { "type": "number" },
+        "ports": { "type": "array" }
+      },
+      "required": ["id", "name", "ip", "status", "latency", "rackId", "rackPosition", "ports"]
+    },
+    "TopologyNode": {
+      "title": "TopologyNode",
+      "description": "Network topology nodes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "ip": { "type": "string" },
+        "status": { "type": "string" },
+        "connectedTo": { "type": "array" },
+        "vlan": { "type": "string" },
+        "subnet": { "type": "string" }
+      },
+      "required": ["id", "name", "type", "ip", "status", "connectedTo", "vlan", "subnet"]
+    },
+    "ITProject": {
+      "title": "ITProject",
+      "description": "IT Project cards",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string" },
+        "manager": { "type": "string" },
+        "dueDate": { "type": "string" }
+      },
+      "required": ["id", "name", "description", "status", "manager", "dueDate"]
+    },
+    "RSSFeedItem": {
+      "title": "RSSFeedItem",
+      "description": "RSS/System alerts feed items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "pubDate": { "type": "string" },
+        "type": { "type": "string" }
+      },
+      "required": ["id", "title", "content", "pubDate", "type"]
+    },
+    "KBArticle": {
+      "title": "KBArticle",
+      "description": "Knowledge base articles",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "tags": { "type": "array" }
+      },
+      "required": ["id", "title", "content", "category", "tags"]
+    },
+    "SavedQuery": {
+      "title": "SavedQuery",
+      "description": "Saved SQL or log search queries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "queryText": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "queryText", "createdAt"]
+    },
+    "AssetReservation": {
+      "title": "AssetReservation",
+      "description": "Asset reservation bookings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "assetId": { "type": "string" },
+        "assetName": { "type": "string" },
+        "reservedBy": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "assetId", "assetName", "reservedBy", "startTime", "endTime", "status"]
+    },
+    "UserRegistryItem": {
+      "title": "UserRegistryItem",
+      "description": "Users registry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "profileImage": { "type": "string" },
+        "clientIp": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "displayName", "email", "role", "profileImage", "clientIp", "status"]
+    },
+    "AssignmentRule": {
+      "title": "AssignmentRule",
+      "description": "Ticket assignment rules",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "trigger": { "type": "string" },
+        "value": { "type": "string" },
+        "assignToUserId": { "type": "string" },
+        "assignToUserName": { "type": "string" }
+      },
+      "required": ["id", "trigger", "value", "assignToUserId", "assignToUserName"]
+    },
+    "DirectMessage": {
+      "title": "DirectMessage",
+      "description": "Encrypted or regular direct messages",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "recipientId": { "type": "string" },
+        "content": { "type": "string" },
+        "isEncrypted": { "type": "boolean" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "senderId", "senderName", "recipientId", "content", "isEncrypted", "timestamp"]
+    },
+    "ShowTimelineEvent": {
+      "title": "ShowTimelineEvent",
+      "description": "Show event, rehearsal, or maintenance timeline task",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "location": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "title", "type", "description", "startTime", "endTime", "location", "status"]
+    },
+    "PasswordRecord": {
+      "title": "PasswordRecord",
+      "description": "Encrypted credentials for showground infrastructure",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "username": { "type": "string" },
+        "encryptedPassword": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "category", "username", "encryptedPassword", "notes", "createdAt"]
+    },
+    "AssetDeployment": {
+      "title": "AssetDeployment",
+      "description": "Historical asset deployment logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "assetId": { "type": "string" },
+        "assetName": { "type": "string" },
+        "category": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "status": { "type": "string" },
+        "location": { "type": "string" }
+      },
+      "required": ["id", "assetId", "assetName", "category", "timestamp", "status", "location"]
+    },
+    "GeofenceBreach": {
+      "title": "GeofenceBreach",
+      "description": "Historical coordinate violations for security audits",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "assetId": { "type": "string" },
+        "assetName": { "type": "string" },
+        "category": { "type": "string" },
+        "coordinates": { "type": "object" },
+        "timestamp": { "type": "string" },
+        "severity": { "type": "string" },
+        "message": { "type": "string" }
+      },
+      "required": ["id", "assetId", "assetName", "category", "coordinates", "timestamp", "severity", "message"]
+    },
+    "DropdownOption": {
+      "title": "DropdownOption",
+      "description": "Customizable list of dropdown options in the system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string" },
+        "options": { "type": "array" }
+      },
+      "required": ["id", "category", "options"]
+    },
+    "KBComment": {
+      "title": "KBComment",
+      "description": "Threaded comments for KB articles left by technicians",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "articleId": { "type": "string" },
+        "author": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "parentId": { "type": "string" }
+      },
+      "required": ["id", "articleId", "author", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "assets/{id}": { "schema": "Asset", "description": "Assets collection" },
+    "consumables/{id}": { "schema": "Consumable", "description": "Consumables collection" },
+    "tickets/{id}": { "schema": "Ticket", "description": "Tickets collection" },
+    "signal_logs/{id}": { "schema": "SignalLog", "description": "Signal logs collection" },
+    "switch_devices/{id}": { "schema": "SwitchDevice", "description": "Switch devices collection" },
+    "topology_nodes/{id}": { "schema": "TopologyNode", "description": "Topology nodes collection" },
+    "it_projects/{id}": { "schema": "ITProject", "description": "IT projects collection" },
+    "rss_feeds/{id}": { "schema": "RSSFeedItem", "description": "RSS feeds collection" },
+    "kb_articles/{id}": { "schema": "KBArticle", "description": "Knowledge base articles collection" },
+    "saved_queries/{id}": { "schema": "SavedQuery", "description": "Saved queries collection" },
+    "asset_reservations/{id}": { "schema": "AssetReservation", "description": "Asset reservations collection" },
+    "users/{id}": { "schema": "UserRegistryItem", "description": "Users collection" },
+    "assignment_rules/{id}": { "schema": "AssignmentRule", "description": "Assignment rules collection" },
+    "direct_messages/{id}": { "schema": "DirectMessage", "description": "Direct messages collection" },
+    "user_preferences/{id}": { "schema": "UserPreferences", "description": "User preferences collection" },
+    "events/{id}": { "schema": "ShowTimelineEvent", "description": "Events collection" },
+    "passwords/{id}": { "schema": "PasswordRecord", "description": "Encrypted password records" },
+    "asset_deployments/{id}": { "schema": "AssetDeployment", "description": "Asset deployments collection" },
+    "geofence_breaches/{id}": { "schema": "GeofenceBreach", "description": "Geofence breaches collection" },
+    "dropdowns/{id}": { "schema": "DropdownOption", "description": "Dropdown values collection" },
+    "kb_comments/{id}": { "schema": "KBComment", "description": "Comments left on knowledge base articles" }
+  }
+}

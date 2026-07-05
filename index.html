@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script>
+      // Prevent read-only window.fetch errors in iframe sandboxes
+      (function() {
+        try {
+          if (typeof window !== 'undefined' && 'fetch' in window) {
+            let currentFetch = window.fetch;
+            const descriptor = {
+              get() {
+                return currentFetch;
+              },
+              set(val) {
+                currentFetch = val;
+              },
+              configurable: true,
+              enumerable: true
+            };
+            
+            // Try defining on window
+            try {
+              Object.defineProperty(window, 'fetch', descriptor);
+            } catch (e1) {
+              // Fallback to Window.prototype
+              try {
+                Object.defineProperty(Window.prototype, 'fetch', descriptor);
+              } catch (e2) {
+                // Fallback to globalThis
+                if (typeof globalThis !== 'undefined') {
+                  try {
+                    Object.defineProperty(globalThis, 'fetch', descriptor);
+                  } catch (e3) {
+                    console.warn('Could not define fetch getter/setter:', e3);
+                  }
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Could not initialize fetch interceptor:', e);
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
