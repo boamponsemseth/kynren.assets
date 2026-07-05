@@ -1,0 +1,1 @@
+# kynren.assets
