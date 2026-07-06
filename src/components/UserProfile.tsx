@@ -52,20 +52,9 @@ export default function UserProfile({
   const [editDisplayName, setEditDisplayName] = useState(sessionUser?.displayName || preferences.displayName || '');
   const [editProfileImage, setEditProfileImage] = useState(sessionUser?.profileImage || preferences.profileImage || '');
   const [editPassword, setEditPassword] = useState('');
+  const [editRole, setEditRole] = useState<UserRegistryItem['role']>(sessionUser?.role || 'Observer');
   const [showPassword, setShowPassword] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-
-  // NIC Configuration states
-  const [availableNics] = useState([
-    { name: 'Intel I219-LM Gigabit Ethernet', interfaceName: 'eth0', ip: '10.12.10.35', mac: '02:42:AC:12:00:1E', subnetMask: '255.255.255.0', gateway: '10.12.10.1', type: 'Wired' },
-    { name: 'Broadcom BCM43602 802.11ac', interfaceName: 'wlan0', ip: '10.12.10.144', mac: '02:42:AC:12:00:2F', subnetMask: '255.255.255.0', gateway: '10.12.10.1', type: 'Wireless' },
-    { name: 'Realtek RTL8153 USB 3.0', interfaceName: 'eth1', ip: '10.12.1.200', mac: '02:42:AC:12:00:3D', subnetMask: '255.255.255.0', gateway: '10.12.1.1', type: 'Wired' }
-  ]);
-  const [selectedNic, setSelectedNic] = useState(availableNics[0]);
-  const [nicConfigType, setNicConfigType] = useState<'DHCP' | 'Static'>('DHCP');
-  const [staticIp, setStaticIp] = useState('10.12.10.35');
-  const [staticSubnet, setStaticSubnet] = useState('255.255.255.0');
-  const [staticGateway, setStaticGateway] = useState('10.12.10.1');
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
@@ -162,55 +151,15 @@ export default function UserProfile({
             })()}
             <h4 className="font-sans font-bold text-slate-100 text-sm">{preferences.displayName}</h4>
             <span className="text-[10px] text-rose-400 font-mono font-bold uppercase tracking-wider bg-rose-500/10 px-2 py-0.5 border border-rose-500/20 rounded mt-1">
-              Logistics Admin Node
+              {sessionUser?.role || 'Observer'}
             </span>
 
-            {/* Diagnostic Fields */}
-            <div className="w-full mt-4 pt-4 border-t border-slate-800 space-y-2.5 text-xs text-left">
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-400">Client Node IP:</span>
-                <span className="text-emerald-400 font-bold">{preferences.clientIp}</span>
-              </div>
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-400">MAC Address:</span>
-                <span className="text-cyan-400 font-semibold">{selectedNic.mac}</span>
-              </div>
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-400">Subnet Mask:</span>
-                <span className="text-slate-300">{nicConfigType === 'DHCP' ? selectedNic.subnetMask : staticSubnet}</span>
-              </div>
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-400">Default Gateway:</span>
-                <span className="text-slate-300">{nicConfigType === 'DHCP' ? selectedNic.gateway : staticGateway}</span>
-              </div>
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-400">ICMP Connection:</span>
-                <span className="text-cyan-400 font-semibold">12ms (Stable)</span>
-              </div>
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-400">Security Tunnel:</span>
-                <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> RSA-4096
-                </span>
-              </div>
-
-              {/* Editable Client IP Node */}
-              <div className="pt-2 border-t border-slate-900">
-                <label className="block text-[10px] text-slate-400 font-mono mb-1">Override Node Diagnostic IP</label>
-                <input
-                  type="text"
-                  className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 font-mono focus:outline-none"
-                  value={preferences.clientIp}
-                  onChange={(e) => onUpdatePreferences({ clientIp: e.target.value })}
-                />
-              </div>
-            </div>
           </div>
 
-          {/* Editable Profile & NIC Settings Panel */}
+          {/* Editable Profile Settings Panel */}
           <div className="bg-slate-950 p-5 rounded-lg border border-slate-800 space-y-4 shadow-xl">
             <span className="text-xs text-slate-300 font-bold uppercase tracking-wider block border-b border-slate-800 pb-2 flex items-center gap-1.5 font-sans">
-              <User className="w-4 h-4 text-rose-500" /> Profile & NIC Configurations
+              <User className="w-4 h-4 text-rose-500" /> Profile Configurations
             </span>
 
             {saveStatus && (
@@ -230,6 +179,29 @@ export default function UserProfile({
                   placeholder="Enter corporate display name..."
                   className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-slate-700 font-medium font-sans"
                 />
+              </div>
+
+              {/* Interactive Role Assignment (Preview Environment Switcher) */}
+              <div>
+                <label className="block text-[10px] text-slate-400 font-mono mb-1 uppercase tracking-wider font-bold flex items-center gap-1">
+                  Security Privilege Level
+                  <span className="text-[8px] bg-amber-500/10 text-amber-500 px-1 border border-amber-500/20 rounded font-sans font-normal uppercase">Preview Switcher</span>
+                </label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value as UserRegistryItem['role'])}
+                  className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-slate-700 font-medium font-mono"
+                >
+                  <option value="Observer">Observer (Read-Only Viewer)</option>
+                  <option value="Self Service">Self Service</option>
+                  <option value="Operator">Operator (Standard Diagnostics & Scans)</option>
+                  <option value="Technician">Technician (CCTV Configuration & Diagnostics)</option>
+                  <option value="Admin">Admin (Full System Privilege)</option>
+                  <option value="Super Admin">Super Admin (Root Access)</option>
+                </select>
+                <span className="text-[9px] text-slate-500 font-mono mt-1 block leading-normal">
+                  Toggle your operational clearance level to audit permission constraints throughout the system.
+                </span>
               </div>
 
               {/* Profile Image Drag & Drop / Click */}
@@ -305,104 +277,6 @@ export default function UserProfile({
                 </div>
               </div>
 
-              {/* NIC Interface Selector */}
-              <div className="pt-2 border-t border-slate-900 space-y-2">
-                <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block font-bold">Select Active NIC Interface</span>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {availableNics.map(nic => {
-                    const isSelected = selectedNic.interfaceName === nic.interfaceName;
-                    return (
-                      <button
-                        key={nic.interfaceName}
-                        type="button"
-                        onClick={() => {
-                          setSelectedNic(nic);
-                          setStaticIp(nic.ip);
-                          setStaticSubnet(nic.subnetMask);
-                          setStaticGateway(nic.gateway);
-                        }}
-                        className={`py-1.5 px-2 rounded border font-mono text-[9px] text-center transition-all cursor-pointer ${
-                          isSelected 
-                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/40 font-bold' 
-                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700'
-                        }`}
-                      >
-                        {nic.interfaceName}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="p-2.5 bg-slate-900/50 border border-slate-800/40 rounded-lg font-mono text-[10px] text-slate-400 leading-relaxed space-y-1">
-                  <div className="flex justify-between"><span className="text-slate-500 font-medium">NIC Adapter:</span> <span className="text-slate-200">{selectedNic.name}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500 font-medium">MAC Address:</span> <span className="text-cyan-400 font-semibold">{selectedNic.mac}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500 font-medium">IP Address:</span> <span className="text-emerald-400 font-semibold">{nicConfigType === 'DHCP' ? selectedNic.ip : staticIp}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500 font-medium">Subnet Mask:</span> <span className="text-slate-300">{nicConfigType === 'DHCP' ? selectedNic.subnetMask : staticSubnet}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500 font-medium">Default Gateway:</span> <span className="text-slate-300">{nicConfigType === 'DHCP' ? selectedNic.gateway : staticGateway}</span></div>
-                </div>
-              </div>
-
-              {/* NIC Mode Allocation (DHCP vs Static) */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block font-bold">IP Allocation Mode</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setNicConfigType('DHCP')}
-                    className={`py-1 rounded font-mono text-[10px] border transition-all cursor-pointer ${
-                      nicConfigType === 'DHCP' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40 font-bold' 
-                        : 'bg-slate-900 text-slate-400 border-slate-800'
-                    }`}
-                  >
-                    DHCP (Auto)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setNicConfigType('Static')}
-                    className={`py-1 rounded font-mono text-[10px] border transition-all cursor-pointer ${
-                      nicConfigType === 'Static' 
-                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/40 font-bold' 
-                        : 'bg-slate-900 text-slate-400 border-slate-800'
-                    }`}
-                  >
-                    Static IP
-                  </button>
-                </div>
-              </div>
-
-              {/* Static Config inputs */}
-              {nicConfigType === 'Static' && (
-                <div className="bg-slate-900/40 p-2.5 rounded border border-slate-900 space-y-2 animate-in fade-in duration-200 font-mono text-[10px]">
-                  <div>
-                    <label className="text-slate-400 block mb-0.5">Static IP Address *</label>
-                    <input
-                      type="text"
-                      value={staticIp}
-                      onChange={(e) => setStaticIp(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none focus:border-slate-700"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-slate-400 block mb-0.5">Subnet Mask *</label>
-                    <input
-                      type="text"
-                      value={staticSubnet}
-                      onChange={(e) => setStaticSubnet(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none focus:border-slate-700"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-slate-400 block mb-0.5">Default Gateway *</label>
-                    <input
-                      type="text"
-                      value={staticGateway}
-                      onChange={(e) => setStaticGateway(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none focus:border-slate-700"
-                    />
-                  </div>
-                </div>
-              )}
-
               {/* Trigger Save */}
               <button
                 type="button"
@@ -416,10 +290,7 @@ export default function UserProfile({
                       if (editDisplayName) updates.displayName = editDisplayName;
                       if (editProfileImage) updates.profileImage = editProfileImage;
                       if (editPassword) updates.password = editPassword;
-                      
-                      // Save chosen NIC to user details
-                      updates.clientIp = nicConfigType === 'DHCP' ? selectedNic.ip : staticIp;
-                      updates.comment = `NIC: ${selectedNic.interfaceName} (${nicConfigType}). Subnet: ${staticSubnet}. Gateway: ${staticGateway}.`;
+                      if (editRole) updates.role = editRole;
                       
                       await onUpdateUser(sessionUser.id, updates);
                     }
@@ -428,10 +299,9 @@ export default function UserProfile({
                     onUpdatePreferences({
                       displayName: editDisplayName,
                       profileImage: editProfileImage,
-                      clientIp: nicConfigType === 'DHCP' ? selectedNic.ip : staticIp
                     });
 
-                    setSaveStatus('Profile & NIC parameters saved locally & sync\'d with Firestore.');
+                    setSaveStatus('Profile parameters saved locally & sync\'d with Firestore.');
                     setTimeout(() => setSaveStatus(null), 3500);
                   } catch (err) {
                     console.error('Failed to write profile updates', err);

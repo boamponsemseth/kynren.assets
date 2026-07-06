@@ -1,14 +1,17 @@
 [
   {
     "deviceId": "agent_container_host",
-    "token": "tok_85ejsjbmdecg5ces7lkho5",
+    "token": "tok_t0ma8u9m2shfew3kepigq",
     "hostname": "11A-MAC-551249.local",
+    "computerName": "11A-MAC-551249.local",
     "osName": "macOS",
     "osVersion": "25.5.0",
-    "firstSeen": "2026-07-05T20:44:24.149Z",
-    "lastSeen": "2026-07-05T20:56:47.167Z",
+    "architecture": "arm64",
+    "agentVersion": "2.4.1",
+    "firstSeen": "2026-07-06T17:38:55.805Z",
+    "lastSeen": "2026-07-06T19:27:09.674Z",
     "status": "online",
-    "pollingInterval": 8888,
+    "pollingInterval": 10,
     "enabledModules": [
       "system",
       "hardware",
@@ -26,32 +29,602 @@
     },
     "performanceHistory": [
       {
-        "timestamp": "2026-07-05T20:44:24.164Z",
-        "cpu": 33,
-        "memory": 99,
-        "disk": 99
+        "timestamp": "2026-07-06T19:07:47.733Z",
+        "cpu": 34,
+        "memory": 82,
+        "disk": 35
       },
       {
-        "timestamp": "2026-07-05T20:50:24.731Z",
+        "timestamp": "2026-07-06T19:07:57.741Z",
+        "cpu": 41,
+        "memory": 83,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:08:07.751Z",
+        "cpu": 38,
+        "memory": 84,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:08:17.761Z",
+        "cpu": 41,
+        "memory": 86,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:08:27.773Z",
+        "cpu": 33,
+        "memory": 88,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:08:37.781Z",
+        "cpu": 39,
+        "memory": 88,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:08:47.792Z",
+        "cpu": 38,
+        "memory": 89,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:08:57.801Z",
+        "cpu": 42,
+        "memory": 90,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:09:07.813Z",
+        "cpu": 42,
+        "memory": 91,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:09:17.833Z",
+        "cpu": 41,
+        "memory": 96,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:09:27.841Z",
+        "cpu": 37,
+        "memory": 96,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:09:37.849Z",
+        "cpu": 37,
+        "memory": 96,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:09:47.872Z",
+        "cpu": 40,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:09:57.880Z",
+        "cpu": 45,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:10:07.890Z",
+        "cpu": 42,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:10:17.914Z",
+        "cpu": 36,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:10:27.922Z",
+        "cpu": 37,
+        "memory": 97,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:10:37.930Z",
+        "cpu": 38,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:10:47.940Z",
+        "cpu": 32,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:10:57.951Z",
+        "cpu": 43,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:11:07.959Z",
+        "cpu": 37,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:11:17.983Z",
+        "cpu": 36,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:11:27.992Z",
+        "cpu": 34,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:11:38.000Z",
+        "cpu": 38,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:11:48.023Z",
+        "cpu": 36,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:11:58.034Z",
+        "cpu": 41,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:12:08.043Z",
+        "cpu": 39,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:12:18.069Z",
+        "cpu": 33,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:12:28.079Z",
+        "cpu": 35,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:12:38.137Z",
+        "cpu": 44,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:13:15.703Z",
+        "cpu": 51,
+        "memory": 90,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:13:25.728Z",
+        "cpu": 48,
+        "memory": 97,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:13:35.737Z",
+        "cpu": 45,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:13:45.773Z",
+        "cpu": 33,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:13:55.782Z",
+        "cpu": 36,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:14:05.803Z",
+        "cpu": 32,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:14:15.811Z",
+        "cpu": 38,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:14:25.820Z",
+        "cpu": 37,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:14:35.828Z",
+        "cpu": 41,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:14:45.938Z",
         "cpu": 33,
         "memory": 98,
-        "disk": 98
+        "disk": 35
       },
       {
-        "timestamp": "2026-07-05T20:54:20.597Z",
+        "timestamp": "2026-07-06T19:14:55.949Z",
+        "cpu": 39,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:15:05.958Z",
         "cpu": 33,
         "memory": 99,
         "disk": 35
       },
       {
-        "timestamp": "2026-07-05T20:55:24.976Z",
+        "timestamp": "2026-07-06T19:15:15.965Z",
+        "cpu": 36,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:15:25.974Z",
+        "cpu": 39,
+        "memory": 100,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:17:58.711Z",
+        "cpu": 70,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:18:08.727Z",
+        "cpu": 58,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:18:18.750Z",
+        "cpu": 43,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:18:28.759Z",
+        "cpu": 40,
+        "memory": 100,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:18:38.767Z",
+        "cpu": 39,
+        "memory": 97,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:18:48.775Z",
         "cpu": 33,
         "memory": 99,
         "disk": 35
       },
       {
-        "timestamp": "2026-07-05T20:56:47.167Z",
+        "timestamp": "2026-07-06T19:18:58.783Z",
+        "cpu": 45,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:19:08.791Z",
+        "cpu": 35,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:19:18.815Z",
+        "cpu": 31,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:19:28.823Z",
+        "cpu": 28,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:19:38.831Z",
+        "cpu": 39,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:19:48.852Z",
+        "cpu": 32,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:19:58.863Z",
+        "cpu": 34,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:20:08.887Z",
+        "cpu": 25,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:20:18.908Z",
+        "cpu": 23,
+        "memory": 95,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:20:28.929Z",
         "cpu": 33,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:20:38.951Z",
+        "cpu": 31,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:20:48.973Z",
+        "cpu": 27,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:20:58.995Z",
+        "cpu": 50,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:21:09.021Z",
+        "cpu": 32,
+        "memory": 100,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:21:19.030Z",
+        "cpu": 23,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:21:29.053Z",
+        "cpu": 27,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:21:39.061Z",
+        "cpu": 33,
+        "memory": 100,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:21:49.069Z",
+        "cpu": 19,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:21:59.089Z",
+        "cpu": 28,
+        "memory": 100,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:22:09.117Z",
+        "cpu": 23,
+        "memory": 95,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:22:19.137Z",
+        "cpu": 22,
+        "memory": 95,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:22:29.146Z",
+        "cpu": 21,
+        "memory": 96,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:22:39.168Z",
+        "cpu": 31,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:22:49.192Z",
+        "cpu": 20,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:22:59.216Z",
+        "cpu": 29,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:23:09.239Z",
+        "cpu": 29,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:23:19.250Z",
+        "cpu": 23,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:23:29.257Z",
+        "cpu": 33,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:23:39.267Z",
+        "cpu": 35,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:23:49.288Z",
+        "cpu": 35,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:23:59.309Z",
+        "cpu": 33,
+        "memory": 94,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:24:09.332Z",
+        "cpu": 24,
+        "memory": 97,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:24:19.353Z",
+        "cpu": 26,
+        "memory": 100,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:24:29.372Z",
+        "cpu": 24,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:24:39.395Z",
+        "cpu": 37,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:24:49.411Z",
+        "cpu": 32,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:24:59.433Z",
+        "cpu": 32,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:25:09.453Z",
+        "cpu": 24,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:25:19.476Z",
+        "cpu": 24,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:25:29.496Z",
+        "cpu": 19,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:25:39.513Z",
+        "cpu": 37,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:25:49.530Z",
+        "cpu": 37,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:25:59.555Z",
+        "cpu": 40,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:26:09.579Z",
+        "cpu": 32,
+        "memory": 96,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:26:19.588Z",
+        "cpu": 25,
+        "memory": 97,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:26:29.596Z",
+        "cpu": 27,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:26:39.613Z",
+        "cpu": 37,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:26:49.627Z",
+        "cpu": 39,
+        "memory": 99,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:26:59.652Z",
+        "cpu": 35,
+        "memory": 98,
+        "disk": 35
+      },
+      {
+        "timestamp": "2026-07-06T19:27:09.674Z",
+        "cpu": 27,
         "memory": 99,
         "disk": 35
       }
@@ -59,11 +632,35 @@
     "commands": [],
     "alerts": [
       {
-        "id": "alert_qku6a7w",
-        "timestamp": "2026-07-05T20:54:20.597Z",
+        "id": "alert_88m9xrs",
+        "timestamp": "2026-07-06T18:30:12.221Z",
+        "type": "critical",
+        "title": "Agent Offline",
+        "message": "Endpoint Agent 11A-MAC-551249.local has stopped checking in. Disconnect detected.",
+        "resolved": false
+      },
+      {
+        "id": "alert_toujb25",
+        "timestamp": "2026-07-06T17:59:28.993Z",
+        "type": "warning",
+        "title": "High CPU Usage",
+        "message": "Endpoint CPU load is elevated: 87% load detected.",
+        "resolved": false
+      },
+      {
+        "id": "alert_3mdukzb",
+        "timestamp": "2026-07-06T17:38:56.070Z",
         "type": "warning",
         "title": "High Memory Usage",
-        "message": "System memory capacity nearly full: 99% occupied.",
+        "message": "System memory capacity nearly full: 91% occupied.",
+        "resolved": false
+      },
+      {
+        "id": "alert_lh5rl2n",
+        "timestamp": "2026-07-06T17:38:55.805Z",
+        "type": "success",
+        "title": "Agent Registered",
+        "message": "Secure Endpoint Agent registered successfully from 11A-MAC-551249.local (macOS).",
         "resolved": false
       }
     ],
@@ -77,8 +674,8 @@
       "architecture": "arm64",
       "timezone": "Europe/London",
       "locale": "C.UTF-8",
-      "uptime": 271367,
-      "lastBoot": "2026-07-02T17:33:59.980Z",
+      "uptime": 1678,
+      "lastBoot": "2026-07-06T18:02:17.383Z",
       "loggedUser": "SETH",
       "manufacturer": "Apple Inc.",
       "model": "Mac15,3",
@@ -95,7 +692,7 @@
       },
       "memory": {
         "total": 17179869184,
-        "used": 17051549696
+        "used": 16927047680
       },
       "disks": [
         {
@@ -133,23 +730,21 @@
       "ipv6": [
         "::1",
         "fe80::1",
-        "fe80::10aa:b2a6:1574:d04e",
+        "fe80::147a:5a2a:be2d:5e",
         "2a00:23c4:920b:f801:1c4f:86f:9170:5f3d",
-        "2a00:23c4:920b:f801:2d95:1b10:a679:1e45",
-        "fe80::28df:4bff:fe5c:a227",
-        "fe80::1f9d:d6f0:64b4:f116",
-        "fe80::d910:edad:cda4:aec2",
-        "fe80::b882:9527:f932:592",
+        "2a00:23c4:920b:f801:1598:7b4:a8b5:85f3",
+        "fe80::dc7b:abff:fe2e:d652",
+        "fe80::8a91:5baa:b388:66f7",
+        "fe80::b712:8d05:bd94:ee20",
+        "fe80::cdd:4cd3:428e:b7eb",
         "fe80::ce81:b1c:bd2c:69e",
-        "fe80::6236:86b5:6ec3:eafa",
-        "fe80::f142:1473:211c:970c",
-        "fe80::fd07:8d70:ea8f:8840",
-        "fe80::983b:7819:ab77:9881"
+        "fe80::e996:fde9:f46e:3469",
+        "fe80::6482:82a6:9e91:c662"
       ],
       "publicIp": "81.132.196.36",
       "macAddresses": [
         "c6:1e:80:ab:5f:1c",
-        "2a:df:4b:5c:a2:27"
+        "de:7b:ab:2e:d6:52"
       ],
       "interfaces": [
         {
@@ -173,9 +768,9 @@
             "192.168.1.144"
           ],
           "ipv6": [
-            "fe80::10aa:b2a6:1574:d04e",
+            "fe80::147a:5a2a:be2d:5e",
             "2a00:23c4:920b:f801:1c4f:86f:9170:5f3d",
-            "2a00:23c4:920b:f801:2d95:1b10:a679:1e45"
+            "2a00:23c4:920b:f801:1598:7b4:a8b5:85f3"
           ],
           "type": "Ethernet",
           "status": "up",
@@ -183,10 +778,10 @@
         },
         {
           "name": "awdl0",
-          "mac": "2a:df:4b:5c:a2:27",
+          "mac": "de:7b:ab:2e:d6:52",
           "ipv4": [],
           "ipv6": [
-            "fe80::28df:4bff:fe5c:a227"
+            "fe80::dc7b:abff:fe2e:d652"
           ],
           "type": "Ethernet",
           "status": "up",
@@ -194,10 +789,10 @@
         },
         {
           "name": "llw0",
-          "mac": "2a:df:4b:5c:a2:27",
+          "mac": "de:7b:ab:2e:d6:52",
           "ipv4": [],
           "ipv6": [
-            "fe80::28df:4bff:fe5c:a227"
+            "fe80::dc7b:abff:fe2e:d652"
           ],
           "type": "Ethernet",
           "status": "up",
@@ -208,7 +803,7 @@
           "mac": "N/A",
           "ipv4": [],
           "ipv6": [
-            "fe80::1f9d:d6f0:64b4:f116"
+            "fe80::8a91:5baa:b388:66f7"
           ],
           "type": "Ethernet",
           "status": "up",
@@ -219,7 +814,7 @@
           "mac": "N/A",
           "ipv4": [],
           "ipv6": [
-            "fe80::d910:edad:cda4:aec2"
+            "fe80::b712:8d05:bd94:ee20"
           ],
           "type": "Ethernet",
           "status": "up",
@@ -230,7 +825,7 @@
           "mac": "N/A",
           "ipv4": [],
           "ipv6": [
-            "fe80::b882:9527:f932:592"
+            "fe80::cdd:4cd3:428e:b7eb"
           ],
           "type": "Ethernet",
           "status": "up",
@@ -252,7 +847,7 @@
           "mac": "N/A",
           "ipv4": [],
           "ipv6": [
-            "fe80::6236:86b5:6ec3:eafa"
+            "fe80::e996:fde9:f46e:3469"
           ],
           "type": "Ethernet",
           "status": "up",
@@ -263,29 +858,7 @@
           "mac": "N/A",
           "ipv4": [],
           "ipv6": [
-            "fe80::f142:1473:211c:970c"
-          ],
-          "type": "Ethernet",
-          "status": "up",
-          "speed": "1 Gbps"
-        },
-        {
-          "name": "utun7",
-          "mac": "N/A",
-          "ipv4": [],
-          "ipv6": [
-            "fe80::fd07:8d70:ea8f:8840"
-          ],
-          "type": "Ethernet",
-          "status": "up",
-          "speed": "1 Gbps"
-        },
-        {
-          "name": "utun8",
-          "mac": "N/A",
-          "ipv4": [],
-          "ipv6": [
-            "fe80::983b:7819:ab77:9881"
+            "fe80::6482:82a6:9e91:c662"
           ],
           "type": "Ethernet",
           "status": "up",
@@ -360,7 +933,7 @@
     "processes": [
       {
         "name": "node",
-        "pid": 81567,
+        "pid": 3366,
         "cpu": 1.2,
         "memory": 4.5
       },
@@ -376,9 +949,6 @@
         "cpu": 0.5,
         "memory": 1.8
       }
-    ],
-    "computerName": "11A-MAC-551249.local",
-    "architecture": "arm64",
-    "agentVersion": "2.4.1"
+    ]
   }
 ]

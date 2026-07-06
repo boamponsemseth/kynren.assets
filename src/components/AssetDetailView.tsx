@@ -201,6 +201,11 @@ export default function AssetDetailView({
     }
   }, [asset]);
 
+  // Battery replacement form states
+  const [logRepDate, setLogRepDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [logRepTech, setLogRepTech] = useState<string>('');
+  const [logRepSerial, setLogRepSerial] = useState<string>('');
+
   // Smart Reassign state and logic
   const [isSmartReassignOpen, setIsSmartReassignOpen] = useState(false);
   const [reassignSuggestions, setReassignSuggestions] = useState<{
@@ -539,8 +544,8 @@ export default function AssetDetailView({
 
         {/* Right Active Panel */}
         <div className="flex-1 p-6 md:p-8 overflow-y-auto bg-slate-900/40">
-          {/* Battery Level Monitoring for highValue or mobile status */}
-          {(asset.isHighValue || asset.tags?.includes('high-value') || asset.tags?.includes('mobile') || asset.status === 'mobile' || asset.category?.toLowerCase() === 'mobile') && (
+          {/* Battery Level Monitoring for highValue, batteryPowered or mobile status */}
+          {(asset.isBatteryPowered || asset.isHighValue || asset.tags?.includes('high-value') || asset.tags?.includes('mobile') || asset.status === 'mobile' || asset.category?.toLowerCase() === 'mobile') && (
             <div className="mb-6 bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-lg">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
                 <div className="flex items-center gap-2.5">
@@ -855,6 +860,165 @@ export default function AssetDetailView({
                         </div>
                       </div>
                     )}
+
+                    {/* Power Configuration Option */}
+                    <div className="p-4 rounded-lg bg-slate-900 border border-slate-850 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`p-1.5 rounded-lg ${asset.isBatteryPowered ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+                            <Battery className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 font-mono block uppercase">Power Specification</span>
+                            <span className="text-xs font-bold text-slate-200">
+                              {asset.isBatteryPowered ? 'Battery-Powered Hardware' : 'Main AC Powered (Grid)'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer"
+                            checked={!!asset.isBatteryPowered}
+                            onChange={async (e) => {
+                              if (onUpdateAsset) {
+                                setIsUpdatingProfile(true);
+                                const nextVal = e.target.checked;
+                                const updatedFields: Partial<Asset> = { isBatteryPowered: nextVal };
+                                if (nextVal && asset.batteryLevel === undefined) {
+                                  updatedFields.batteryLevel = 100;
+                                }
+                                await onUpdateAsset(asset.id, updatedFields);
+                                setIsUpdatingProfile(false);
+                              }
+                            }}
+                          />
+                          <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600 peer-checked:after:bg-white peer-checked:after:border-white"></div>
+                        </label>
+                      </div>
+
+                      {asset.isBatteryPowered && (
+                        <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-850/50">
+                          <div>
+                            <label className="block text-[9px] text-slate-500 font-mono uppercase mb-1">Set Battery Charge (%)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={asset.batteryLevel ?? 100}
+                              onChange={async (e) => {
+                                const level = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
+                                if (onUpdateAsset) {
+                                  await onUpdateAsset(asset.id, { batteryLevel: level });
+                                }
+                              }}
+                              className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 font-mono"
+                            />
+                          </div>
+                          <div className="flex flex-col justify-end">
+                            <span className="text-[9px] text-slate-400 font-mono block leading-tight">
+                              Setting this activates live telemetry and battery history tracking.
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {asset.isBatteryPowered && (
+                        <div className="mt-3 pt-3 border-t border-slate-850/50 space-y-3">
+                          <h5 className="text-[10px] font-bold text-slate-300 uppercase tracking-wider font-mono">
+                            🔋 Battery Maintenance & Replacement Log
+                          </h5>
+
+                          {/* Replacement Log Form */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80 text-left">
+                            <div>
+                              <label className="block text-[8px] text-slate-500 font-mono uppercase mb-0.5">Date</label>
+                              <input
+                                type="date"
+                                value={logRepDate}
+                                onChange={(e) => setLogRepDate(e.target.value)}
+                                className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-1 text-[10px] text-slate-200 font-mono focus:outline-none focus:border-rose-500/40"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[8px] text-slate-500 font-mono uppercase mb-0.5">Technician</label>
+                              <input
+                                type="text"
+                                placeholder="Technician Name"
+                                value={logRepTech}
+                                onChange={(e) => setLogRepTech(e.target.value)}
+                                className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-1 text-[10px] text-slate-200 focus:outline-none focus:border-rose-500/40"
+                              />
+                            </div>
+                            <div className="flex gap-1 items-end">
+                              <div className="flex-1">
+                                <label className="block text-[8px] text-slate-500 font-mono uppercase mb-0.5">Serial Number</label>
+                                <input
+                                  type="text"
+                                  placeholder="New Battery S/N"
+                                  value={logRepSerial}
+                                  onChange={(e) => setLogRepSerial(e.target.value)}
+                                  className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-1 text-[10px] text-slate-200 font-mono focus:outline-none focus:border-rose-500/40"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!logRepTech || !logRepSerial) return;
+                                  if (onUpdateAsset) {
+                                    setIsUpdatingProfile(true);
+                                    const entry = {
+                                      date: logRepDate,
+                                      technicianName: logRepTech,
+                                      batterySerialNumber: logRepSerial
+                                    };
+                                    const nextHistory = [...(asset.batteryChangeHistory || []), entry];
+                                    await onUpdateAsset(asset.id, { batteryChangeHistory: nextHistory });
+                                    setLogRepSerial('');
+                                    setIsUpdatingProfile(false);
+                                  }
+                                }}
+                                disabled={!logRepTech || !logRepSerial}
+                                className="px-2 py-1 bg-rose-600 hover:bg-rose-500 disabled:bg-slate-850 disabled:text-slate-500 text-white rounded text-[10px] uppercase font-mono font-bold transition-all cursor-pointer h-[24px] flex items-center justify-center"
+                              >
+                                Log
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Replacement History Table */}
+                          <div className="overflow-x-auto text-left">
+                            <table className="w-full text-left border-collapse text-[10px] font-mono border border-slate-850 bg-slate-950 rounded-lg overflow-hidden">
+                              <thead>
+                                <tr className="bg-slate-900 border-b border-slate-850 text-slate-500 uppercase text-[8px] tracking-wider">
+                                  <th className="p-2">Date</th>
+                                  <th className="p-2">Technician</th>
+                                  <th className="p-2">Battery S/N</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-850/40 text-slate-300">
+                                {asset.batteryChangeHistory && asset.batteryChangeHistory.length > 0 ? (
+                                  asset.batteryChangeHistory.map((row, idx) => (
+                                    <tr key={idx} className="hover:bg-slate-900/40 transition-colors">
+                                      <td className="p-2 font-bold text-slate-400">{row.date}</td>
+                                      <td className="p-2">{row.technicianName}</td>
+                                      <td className="p-2 font-semibold text-rose-400">{row.batterySerialNumber}</td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={3} className="p-3 text-center text-slate-600 italic">
+                                      No battery replacements logged for this hardware.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Image Gallery */}
                     <div className="mt-4 pt-4 border-t border-slate-850">

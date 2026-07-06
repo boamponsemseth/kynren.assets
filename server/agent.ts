@@ -9,6 +9,7 @@ let token = '';
 let pollingInterval = 10; // in seconds
 let enabledModules = ['system', 'hardware', 'network', 'software', 'services', 'processes', 'performance'];
 let logLevel: 'info' | 'warn' | 'error' | 'debug' = 'info';
+let isConnected = true;
 
 // Generate a unique Device ID on first launch if not provided
 if (!deviceId) {
@@ -657,12 +658,19 @@ async function sendHeartbeat() {
     });
 
     if (res.ok) {
+      if (!isConnected) {
+        log('Connectivity re-established with central operations server. Resuming active posture reporting.', 'info');
+        isConnected = true;
+      }
       const data = await res.json();
       if (data.success) {
-        // Handle configuration updates from server
-        pollingInterval = data.pollingInterval || pollingInterval;
-        enabledModules = data.enabledModules || enabledModules;
-        logLevel = data.logLevel || logLevel;
+        // Handle configuration updates from server dynamically in the background
+        if (data.pollingInterval && data.pollingInterval !== pollingInterval) {
+          log(`Config reload received in background. Heartbeat interval adjusted from ${pollingInterval}s to ${data.pollingInterval}s.`, 'info');
+          pollingInterval = data.pollingInterval;
+        }
+        if (data.enabledModules) enabledModules = data.enabledModules;
+        if (data.logLevel) logLevel = data.logLevel;
 
         // Process any queued administrative commands
         if (data.commands && data.commands.length > 0) {
@@ -676,7 +684,10 @@ async function sendHeartbeat() {
       await registerDevice();
     }
   } catch (err) {
-    log(`Heartbeat network check failed (offline queue active): ${err}`, 'debug');
+    if (isConnected) {
+      log(`Connectivity check failed: Unable to reach central operations server. Offline queueing engaged. Retrying check-in in background...`, 'warn');
+      isConnected = false;
+    }
   }
 }
 

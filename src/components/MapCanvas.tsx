@@ -59,7 +59,7 @@ export default function MapCanvas({
 
   const visibleAssets = assets.filter(asset => {
     const cat = asset.category || 'General';
-    return visibleCategories[cat] !== false;
+    return visibleCategories[cat] !== false && asset.coordinates !== undefined;
   });
 
   // Designated Stage Coordinates: 20% to 80%
@@ -424,7 +424,7 @@ export default function MapCanvas({
                     </div>
                   )}
 
-                  {isOutsideGeofence(selectedAsset.coordinates.x, selectedAsset.coordinates.y) && selectedAsset.isHighValue && (
+                  {selectedAsset.coordinates && isOutsideGeofence(selectedAsset.coordinates.x, selectedAsset.coordinates.y) && selectedAsset.isHighValue && (
                     <div className="bg-rose-950/40 border border-rose-500/40 rounded-lg p-2.5 flex items-start gap-2 text-rose-300 font-mono text-[10px] uppercase leading-tight animate-pulse">
                       <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
                       <div>
@@ -453,7 +453,7 @@ export default function MapCanvas({
                   <div>
                     <span className="text-slate-400 block mb-0.5">Showground Coordinates</span>
                     <span className="text-slate-300 font-mono bg-black/30 px-2 py-1 rounded">
-                      X: {selectedAsset.coordinates.x}% | Y: {selectedAsset.coordinates.y}%
+                      X: {selectedAsset.coordinates?.x ?? 'N/A'}% | Y: {selectedAsset.coordinates?.y ?? 'N/A'}%
                     </span>
                   </div>
                   {showHeatmap && (

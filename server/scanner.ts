@@ -5,7 +5,7 @@ import net from 'net';
 import http from 'http';
 import https from 'https';
 import tls from 'tls';
-import { lookupVendor } from './vendorDb';
+import { lookupVendor, lookupVendorInternet } from './vendorDb';
 import { queryDiscoveryProtocols } from './discovery_protocols';
 
 export interface PingResult {
@@ -767,7 +767,7 @@ export async function scanHostExtended(
 
   if (resolvedMac) {
     mac = resolvedMac;
-    vendor = lookupVendor(resolvedMac);
+    vendor = await lookupVendorInternet(resolvedMac);
   }
   if (resolvedHostname && resolvedHostname !== 'N/A') {
     hostname = resolvedHostname;

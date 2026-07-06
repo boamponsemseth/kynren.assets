@@ -1,0 +1,531 @@
+{
+  "devices": [
+    {
+      "id": "4a:d4:a5:ee:67:c6",
+      "ip": "192.168.10.11",
+      "mac": "4a:d4:a5:ee:67:c6",
+      "vendor": "Unknown Vendor",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:25.786Z",
+      "lastSeen": "2026-07-06T17:48:53.851Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "44:a8:42:33:cf:36",
+      "ip": "192.168.10.2",
+      "mac": "44:a8:42:33:cf:36",
+      "hostname": "ea-fs1.ea2015.local",
+      "vendor": "Dell Inc.",
+      "os": "Windows",
+      "deviceType": "Desktop",
+      "firstSeen": "2026-07-06T17:46:26.521Z",
+      "lastSeen": "2026-07-06T17:48:55.042Z",
+      "status": "online",
+      "latency": 67,
+      "ttl": 128,
+      "netbiosName": "EA-FS1",
+      "workgroup": "EA2015",
+      "history": []
+    },
+    {
+      "id": "c6:7d:c6:4b:96:a1",
+      "ip": "192.168.10.6",
+      "mac": "c6:7d:c6:4b:96:a1",
+      "vendor": "Unknown Vendor",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.661Z",
+      "lastSeen": "2026-07-06T17:48:54.893Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "dc:21:5c:23:93:da",
+      "ip": "192.168.10.15",
+      "mac": "dc:21:5c:23:93:da",
+      "vendor": "Intel Corporate",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.668Z",
+      "lastSeen": "2026-07-06T17:48:54.976Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "be:1f:11:2d:65:d9",
+      "ip": "192.168.10.14",
+      "mac": "be:1f:11:2d:65:d9",
+      "vendor": "Unknown Vendor",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.798Z",
+      "lastSeen": "2026-07-06T17:48:54.977Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "3c:1a:cc:dd:d1:fa",
+      "ip": "192.168.10.10",
+      "mac": "3c:1a:cc:dd:d1:fa",
+      "vendor": "Quectel Wireless Solutions Co.,Ltd.",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.799Z",
+      "lastSeen": "2026-07-06T17:48:55.194Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "1c:69:7a:dc:95:20",
+      "ip": "192.168.10.57",
+      "mac": "1c:69:7a:dc:95:20",
+      "vendor": "EliteGroup Computer Systems Co., LTD",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.814Z",
+      "lastSeen": "2026-07-06T17:48:55.062Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "4c:d5:77:b1:b7:a5",
+      "ip": "192.168.10.9",
+      "mac": "4c:d5:77:b1:b7:a5",
+      "vendor": "CHONGQING FUGUI ELECTRONICS CO.,LTD.",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.818Z",
+      "lastSeen": "2026-07-06T17:48:54.890Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "d0:c0:bf:91:59:b7",
+      "ip": "192.168.10.12",
+      "mac": "d0:c0:bf:91:59:b7",
+      "vendor": "Unknown Vendor",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.827Z",
+      "lastSeen": "2026-07-06T17:48:55.213Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "b0:47:e9:79:b9:f4",
+      "ip": "192.168.10.21",
+      "mac": "b0:47:e9:79:b9:f4",
+      "vendor": "Intel Corporate",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.831Z",
+      "lastSeen": "2026-07-06T17:48:55.022Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "62:d2:69:23:89:93",
+      "ip": "192.168.10.60",
+      "mac": "62:d2:69:23:89:93",
+      "vendor": "Unknown Vendor",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.861Z",
+      "lastSeen": "2026-07-06T17:48:55.263Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "192.168.10.254",
+      "ip": "192.168.10.254",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.966Z",
+      "lastSeen": "2026-07-06T17:48:55.475Z",
+      "status": "online",
+      "latency": 4,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "b0:b9:8a:44:85:94",
+      "ip": "192.168.10.100",
+      "mac": "b0:b9:8a:44:85:94",
+      "hostname": "ea3138-nas1.ea2015.local",
+      "vendor": "NETGEAR",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.972Z",
+      "lastSeen": "2026-07-06T17:48:55.060Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "7e:3a:5c:82:f8:a4",
+      "ip": "192.168.10.69",
+      "mac": "7e:3a:5c:82:f8:a4",
+      "vendor": "Unknown Vendor",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:26.982Z",
+      "lastSeen": "2026-07-06T17:48:55.232Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "b0:b9:8a:44:f8:38",
+      "ip": "192.168.10.103",
+      "mac": "b0:b9:8a:44:f8:38",
+      "vendor": "NETGEAR",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:27.483Z",
+      "lastSeen": "2026-07-06T17:48:55.400Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "80:b6:55:64:cd:f0",
+      "ip": "192.168.10.201",
+      "mac": "80:b6:55:64:cd:f0",
+      "vendor": "Intel Corporate",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T17:46:27.728Z",
+      "lastSeen": "2026-07-06T17:48:55.571Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "44:4f:8e:fb:ec:5e",
+      "ip": "192.168.1.66",
+      "mac": "44:4f:8e:fb:ec:5e",
+      "vendor": "WiZ",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T18:31:45.527Z",
+      "lastSeen": "2026-07-06T18:42:36.285Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "5e:87:51:4e:bc:72",
+      "ip": "192.168.1.72",
+      "mac": "5e:87:51:4e:bc:72",
+      "vendor": "Unknown Vendor",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T18:31:45.545Z",
+      "lastSeen": "2026-07-06T18:35:04.475Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "c6:1e:80:ab:5f:1c",
+      "ip": "192.168.1.144",
+      "mac": "c6:1e:80:ab:5f:1c",
+      "vendor": "Unknown Vendor",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T18:31:45.921Z",
+      "lastSeen": "2026-07-06T18:42:36.682Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "44:4f:8e:fb:ed:50",
+      "ip": "192.168.1.101",
+      "mac": "44:4f:8e:fb:ed:50",
+      "vendor": "WiZ",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T18:31:46.450Z",
+      "lastSeen": "2026-07-06T18:42:37.388Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    },
+    {
+      "id": "8c:83:94:99:f2:6a",
+      "ip": "192.168.1.254",
+      "mac": "8c:83:94:99:f2:6a",
+      "vendor": "Arcadyan Corporation",
+      "os": "Linux",
+      "deviceType": "Server",
+      "openPorts": [
+        80
+      ],
+      "servicesDetected": [
+        "HTTP"
+      ],
+      "banners": {
+        "80": "httpd"
+      },
+      "firstSeen": "2026-07-06T18:31:46.579Z",
+      "lastSeen": "2026-07-06T18:42:37.196Z",
+      "status": "online",
+      "latency": 4,
+      "ttl": 64,
+      "ssdpData": {
+        "server": "Linux/3.4.11 UPnP/1.0 MiniUPnPd/1.9",
+        "location": "http://192.168.1.254:58649/793df88e/rootDesc.xml",
+        "modelName": "rootDesc"
+      },
+      "webData": {
+        "serverHeader": "httpd"
+      },
+      "history": []
+    },
+    {
+      "id": "cc:e1:d5:a6:5f:4b",
+      "ip": "192.168.1.234",
+      "mac": "cc:e1:d5:a6:5f:4b",
+      "vendor": "BUFFALO.INC",
+      "os": "Linux",
+      "deviceType": "Server",
+      "firstSeen": "2026-07-06T18:33:14.520Z",
+      "lastSeen": "2026-07-06T18:35:05.578Z",
+      "status": "online",
+      "latency": 1,
+      "ttl": 64,
+      "history": []
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_99o64wd",
+      "timestamp": "2026-07-06T18:33:14.520Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.1.234 has been registered in the asset inventory.",
+      "deviceId": "cc:e1:d5:a6:5f:4b",
+      "resolved": false
+    },
+    {
+      "id": "notif_36u47qd",
+      "timestamp": "2026-07-06T18:31:46.579Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.1.254 has been registered in the asset inventory.",
+      "deviceId": "8c:83:94:99:f2:6a",
+      "resolved": false
+    },
+    {
+      "id": "notif_eqpfhec",
+      "timestamp": "2026-07-06T18:31:46.450Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.1.101 has been registered in the asset inventory.",
+      "deviceId": "44:4f:8e:fb:ed:50",
+      "resolved": false
+    },
+    {
+      "id": "notif_hidd4o3",
+      "timestamp": "2026-07-06T18:31:45.921Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.1.144 has been registered in the asset inventory.",
+      "deviceId": "c6:1e:80:ab:5f:1c",
+      "resolved": false
+    },
+    {
+      "id": "notif_x64imrb",
+      "timestamp": "2026-07-06T18:31:45.545Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.1.72 has been registered in the asset inventory.",
+      "deviceId": "5e:87:51:4e:bc:72",
+      "resolved": false
+    },
+    {
+      "id": "notif_catfnjd",
+      "timestamp": "2026-07-06T18:31:45.527Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.1.66 has been registered in the asset inventory.",
+      "deviceId": "44:4f:8e:fb:ec:5e",
+      "resolved": false
+    },
+    {
+      "id": "notif_n89j1gd",
+      "timestamp": "2026-07-06T17:46:27.728Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.201 has been registered in the asset inventory.",
+      "deviceId": "80:b6:55:64:cd:f0",
+      "resolved": false
+    },
+    {
+      "id": "notif_zpcm0ic",
+      "timestamp": "2026-07-06T17:46:27.483Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.103 has been registered in the asset inventory.",
+      "deviceId": "b0:b9:8a:44:f8:38",
+      "resolved": false
+    },
+    {
+      "id": "notif_hpl98p5",
+      "timestamp": "2026-07-06T17:46:26.982Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.69 has been registered in the asset inventory.",
+      "deviceId": "7e:3a:5c:82:f8:a4",
+      "resolved": false
+    },
+    {
+      "id": "notif_a5k1bsj",
+      "timestamp": "2026-07-06T17:46:26.972Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.100 (ea3138-nas1.ea2015.local) has been registered in the asset inventory.",
+      "deviceId": "b0:b9:8a:44:85:94",
+      "resolved": false
+    },
+    {
+      "id": "notif_kpg1khu",
+      "timestamp": "2026-07-06T17:46:26.966Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.254 has been registered in the asset inventory.",
+      "deviceId": "192.168.10.254",
+      "resolved": false
+    },
+    {
+      "id": "notif_5cu7aww",
+      "timestamp": "2026-07-06T17:46:26.861Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.60 has been registered in the asset inventory.",
+      "deviceId": "62:d2:69:23:89:93",
+      "resolved": false
+    },
+    {
+      "id": "notif_5z1k7tp",
+      "timestamp": "2026-07-06T17:46:26.831Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.21 has been registered in the asset inventory.",
+      "deviceId": "b0:47:e9:79:b9:f4",
+      "resolved": false
+    },
+    {
+      "id": "notif_65o6vz5",
+      "timestamp": "2026-07-06T17:46:26.827Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.12 has been registered in the asset inventory.",
+      "deviceId": "d0:c0:bf:91:59:b7",
+      "resolved": false
+    },
+    {
+      "id": "notif_340x9iw",
+      "timestamp": "2026-07-06T17:46:26.818Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.9 has been registered in the asset inventory.",
+      "deviceId": "4c:d5:77:b1:b7:a5",
+      "resolved": false
+    },
+    {
+      "id": "notif_far9bjf",
+      "timestamp": "2026-07-06T17:46:26.814Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.57 has been registered in the asset inventory.",
+      "deviceId": "1c:69:7a:dc:95:20",
+      "resolved": false
+    },
+    {
+      "id": "notif_79b2b6q",
+      "timestamp": "2026-07-06T17:46:26.799Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.10 has been registered in the asset inventory.",
+      "deviceId": "3c:1a:cc:dd:d1:fa",
+      "resolved": false
+    },
+    {
+      "id": "notif_qjizg2t",
+      "timestamp": "2026-07-06T17:46:26.798Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.14 has been registered in the asset inventory.",
+      "deviceId": "be:1f:11:2d:65:d9",
+      "resolved": false
+    },
+    {
+      "id": "notif_617q68k",
+      "timestamp": "2026-07-06T17:46:26.668Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.15 has been registered in the asset inventory.",
+      "deviceId": "dc:21:5c:23:93:da",
+      "resolved": false
+    },
+    {
+      "id": "notif_jcn1t9n",
+      "timestamp": "2026-07-06T17:46:26.661Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.6 has been registered in the asset inventory.",
+      "deviceId": "c6:7d:c6:4b:96:a1",
+      "resolved": false
+    },
+    {
+      "id": "notif_5opetzu",
+      "timestamp": "2026-07-06T17:46:26.521Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.2 (ea-fs1.ea2015.local) has been registered in the asset inventory.",
+      "deviceId": "44:a8:42:33:cf:36",
+      "resolved": false
+    },
+    {
+      "id": "notif_bpadzn3",
+      "timestamp": "2026-07-06T17:46:25.786Z",
+      "type": "success",
+      "title": "New Device Discovered",
+      "message": "An unknown device at IP 192.168.10.11 has been registered in the asset inventory.",
+      "deviceId": "4a:d4:a5:ee:67:c6",
+      "resolved": false
+    }
+  ]
+}

@@ -109,3 +109,62 @@ export function lookupVendor(mac: string | undefined): string {
   
   return OUI_DATABASE[formattedPrefix] || 'Unknown Vendor';
 }
+
+// Simple in-memory cache to avoid duplicate requests for the same prefix and rate-limiting
+const internetVendorCache = new Map<string, string>();
+
+/**
+ * Look up a MAC address's vendor and manufacturer on the internet dynamically.
+ * Falls back to the local database if offline, rate-limited, or failed.
+ */
+export async function lookupVendorInternet(mac: string | undefined): Promise<string> {
+  if (!mac) return 'Unknown Vendor';
+  
+  // Standardize MAC to get prefix
+  const cleanMac = mac.replace(/[^0-9a-fA-F]/g, '');
+  if (cleanMac.length < 6) return 'Unknown Vendor';
+  const prefix = cleanMac.substring(0, 6).toUpperCase();
+  
+  // Check memory cache first
+  if (internetVendorCache.has(prefix)) {
+    return internetVendorCache.get(prefix)!;
+  }
+  
+  // Fallback to local lookup first as baseline
+  const localVendor = lookupVendor(mac);
+  
+  // Try internet lookup with a short timeout (1.5s) to avoid dragging down scanner speed
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    
+    const formattedMac = `${cleanMac.substring(0, 2)}:${cleanMac.substring(2, 4)}:${cleanMac.substring(4, 6)}`;
+    
+    // api.macvendors.com is a free, standard, and fast plain-text MAC lookup endpoint
+    const response = await fetch(`https://api.macvendors.com/${formattedMac}`, {
+      signal: controller.signal,
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) CCTV-NVR-Scanner/1.0' 
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (response.ok) {
+      const text = (await response.text()).trim();
+      // Ensure the returned text is a valid name and not an error response/HTML page
+      if (text && !text.includes('errors') && !text.includes('Page not found') && !text.startsWith('<') && text.length < 100) {
+        internetVendorCache.set(prefix, text);
+        return text;
+      }
+    } else if (response.status === 404) {
+      // OUI not found in public database, register as local OUI mapping to avoid repeated queries
+      internetVendorCache.set(prefix, localVendor);
+    }
+  } catch (err) {
+    console.warn(`[MAC OUI] Internet lookup failed for ${mac}:`, err);
+  }
+  
+  return localVendor;
+}
+

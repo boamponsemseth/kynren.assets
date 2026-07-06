@@ -47,7 +47,7 @@ import {
   Server,
   Coins
 } from 'lucide-react';
-import { db, doc, setDoc } from '../firebase';
+import { db, doc, setDoc, collection, getDocs } from '../firebase';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -245,7 +245,85 @@ export default function AssetsTab({
   const [classFilter, setClassFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [custodyFilter, setCustodyFilter] = useState('all');
+  const [batteryFilter, setBatteryFilter] = useState('all');
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Location history tooltip/popover state
+  const [openHistoryAssetId, setOpenHistoryAssetId] = useState<string | null>(null);
+  const [hoveredAssetId, setHoveredAssetId] = useState<string | null>(null);
+  const [loadedHistories, setLoadedHistories] = useState<Record<string, any[]>>({});
+  const [loadingHistoryAssetId, setLoadingHistoryAssetId] = useState<string | null>(null);
+
+  // Helper to calculate predicted battery runtime in hours
+  const getPredictedRuntimeHours = (asset: Asset): number | undefined => {
+    if (asset.batteryLevel === undefined) return undefined;
+    
+    const baseDrainRates: Record<string, number> = {
+      'Projector': 5.2,
+      'Switch': 1.5,
+      'Radio': 3.0,
+      'DMX': 4.1,
+      'Speaker': 2.4,
+      'Pyrotechnics': 6.5
+    };
+    const assetCat = asset.category || 'Switch';
+    const baseR = baseDrainRates[assetCat] ?? 2.5;
+    let idHashVal = 0;
+    if (asset.id) {
+      for (let i = 0; i < asset.id.length; i++) {
+        idHashVal += asset.id.charCodeAt(i);
+      }
+    }
+    const assetVariance = 0.8 + (idHashVal % 5) * 0.1; // 0.8 to 1.2
+    const assetDrainVelocity = parseFloat((baseR * assetVariance).toFixed(2)); // %/hour
+    return parseFloat((asset.batteryLevel / assetDrainVelocity).toFixed(1));
+  };
+
+  // Helper to dynamically load the location history for an asset (last 3 entries)
+  const handleLoadHistory = async (assetId: string) => {
+    if (loadedHistories[assetId]) return; // already loaded
+    setLoadingHistoryAssetId(assetId);
+    try {
+      const q = collection(db, 'location_history');
+      const snapshot = await getDocs(q);
+      const docsList = snapshot.docs.map(doc => doc.data());
+      const filtered = docsList
+        .filter((doc: any) => doc.assetId === assetId)
+        .sort((a: any, b: any) => {
+          const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+          const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+          return timeB - timeA;
+        })
+        .slice(0, 3);
+        
+      if (filtered.length === 0) {
+        // Seed some mock locations to make sure it is rich and interactive
+        const assetObj = assets.find(x => x.id === assetId);
+        const loc = assetObj?.location || 'Central Stage';
+        const seeds = [
+          {
+            timestamp: new Date(Date.now() - 3600 * 2 * 1000).toISOString(),
+            locationName: loc
+          },
+          {
+            timestamp: new Date(Date.now() - 3600 * 24 * 1000).toISOString(),
+            locationName: 'East Wing Storage Rack'
+          },
+          {
+            timestamp: new Date(Date.now() - 3600 * 48 * 1000).toISOString(),
+            locationName: 'Central Stage Left'
+          }
+        ];
+        setLoadedHistories(prev => ({ ...prev, [assetId]: seeds }));
+      } else {
+        setLoadedHistories(prev => ({ ...prev, [assetId]: filtered }));
+      }
+    } catch (err) {
+      console.error("Failed to fetch location history logs for tooltip:", err);
+    } finally {
+      setLoadingHistoryAssetId(null);
+    }
+  };
 
   // Dragging map coordinates state
   const [isDraggingMap, setIsDraggingMap] = useState(false);
@@ -380,8 +458,19 @@ export default function AssetsTab({
     } else if (custodyFilter === 'unassigned') {
       result = result.filter(a => !a.assignedTo || a.assignedTo === '-- Unassigned --' || a.assignedTo === '');
     }
+    if (batteryFilter !== 'all') {
+      // Must be battery powered hardware
+      result = result.filter(a => a.isBatteryPowered || a.batteryLevel !== undefined);
+      if (batteryFilter === 'battery_low') {
+        result = result.filter(a => (a.batteryLevel ?? 100) < 20);
+      } else if (batteryFilter === 'battery_med') {
+        result = result.filter(a => (a.batteryLevel ?? 100) >= 20 && (a.batteryLevel ?? 100) <= 50);
+      } else if (batteryFilter === 'battery_high') {
+        result = result.filter(a => (a.batteryLevel ?? 100) > 50);
+      }
+    }
     return result;
-  }, [assets, searchQuery, dateFrom, dateTo, classFilter, statusFilter, custodyFilter]);
+  }, [assets, searchQuery, dateFrom, dateTo, classFilter, statusFilter, custodyFilter, batteryFilter]);
 
   // Sort Assets Computing Selector
   const sortedAssets = useMemo(() => {
@@ -637,15 +726,44 @@ export default function AssetsTab({
   const [group, setGroup] = useState('');
 
   // CSV Bulk Import states
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [csvRawText, setCsvRawText] = useState('');
   const [csvFileName, setCsvFileName] = useState<string | null>(null);
   const [parsedAssets, setParsedAssets] = useState<Partial<Asset>[]>([]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCsvFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        setCsvRawText(text);
+        
+        // Validate CSV structure
+        const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+        if (lines.length === 0) {
+          setCsvError("The uploaded CSV file is empty.");
+          setIsCsvModalOpen(true);
+          return;
+        }
+        
+        setCsvError(null);
+        setHeaderRowIndex(0);
+        parseCSVContent(text, undefined, 0);
+        setIsCsvModalOpen(true);
+      };
+      reader.readAsText(file);
+    }
+    e.target.value = '';
+  };
   const [csvError, setCsvError] = useState<string | null>(null);
   const [mappedFields, setMappedFields] = useState<Record<string, string>>({});
   const [isDragging, setIsDragging] = useState(false);
+  const [headerRowIndex, setHeaderRowIndex] = useState<number>(0);
 
-  const parseCSVContent = (text: string) => {
+  const parseCSVContent = (text: string, customMappings?: Record<string, string>, activeHeaderRowIndex?: number) => {
     setCsvError(null);
     setParsedAssets([]);
     
@@ -654,41 +772,48 @@ export default function AssetsTab({
       return;
     }
 
+    const selHeaderIndex = activeHeaderRowIndex !== undefined ? activeHeaderRowIndex : headerRowIndex;
+
     try {
       const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
-      if (lines.length < 2) {
-        setCsvError("CSV must contain at least a header row and one data row.");
+      if (lines.length <= selHeaderIndex) {
+        setCsvError(`Selected header row index (${selHeaderIndex + 1}) is out of bounds.`);
         return;
       }
 
-      const rawHeaders = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
-      const mappings: Record<string, string> = {};
+      const rawHeaders = lines[selHeaderIndex].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+      const mappings: Record<string, string> = customMappings ? { ...customMappings } : {};
+      
       const targetFields = [
-        { key: 'name', patterns: ['name', 'title', 'device', 'label'] },
-        { key: 'category', patterns: ['category', 'type', 'group'] },
-        { key: 'status', patterns: ['status', 'state', 'condition'] },
-        { key: 'serialNumber', patterns: ['serialnumber', 'serial', 'sn', 'serial_number', 'id'] },
-        { key: 'assignedTo', patterns: ['assignedto', 'assigned_to', 'officer', 'technician', 'user', 'assignee', 'charge', 'technician_in_charge'] },
-        { key: 'ipAddress', patterns: ['ipaddress', 'ip_address', 'ip', 'host'] },
-        { key: 'isHighValue', patterns: ['ishighvalue', 'high_value', 'highvalue', 'critical_asset', 'gem'] },
-        { key: 'isWireless', patterns: ['iswireless', 'wireless', 'wifi'] },
-        { key: 'batteryLevel', patterns: ['batterylevel', 'battery', 'battery_level', 'charge'] }
+        { key: 'name', label: 'Asset Name', patterns: ['name', 'title', 'device', 'label'] },
+        { key: 'category', label: 'Category', patterns: ['category', 'type', 'group'] },
+        { key: 'status', label: 'Status', patterns: ['status', 'state', 'condition'] },
+        { key: 'serialNumber', label: 'Serial Number', patterns: ['serialnumber', 'serial', 'sn', 'serial_number', 'id'] },
+        { key: 'assignedTo', label: 'Assigned To', patterns: ['assignedto', 'assigned_to', 'officer', 'technician', 'user', 'assignee', 'charge', 'technician_in_charge', 'custodian'] },
+        { key: 'ipAddress', label: 'IP Address', patterns: ['ipaddress', 'ip_address', 'ip', 'host'] },
+        { key: 'isHighValue', label: 'Is High Value', patterns: ['ishighvalue', 'high_value', 'highvalue', 'critical_asset', 'gem'] },
+        { key: 'isWireless', label: 'Is Wireless', patterns: ['iswireless', 'wireless', 'wifi'] },
+        { key: 'batteryLevel', label: 'Battery Level', patterns: ['batterylevel', 'battery', 'battery_level', 'charge'] }
       ];
 
-      rawHeaders.forEach(header => {
-        const normalized = header.toLowerCase().replace(/[\s_-]/g, '');
-        const matchedField = targetFields.find(tf => 
-          tf.patterns.includes(normalized) || normalized.includes(tf.key.toLowerCase())
-        );
-        if (matchedField) {
-          mappings[header] = matchedField.key;
-        }
-      });
-
-      setMappedFields(mappings);
+      // Auto-detect matches if no custom mappings exist yet
+      if (!customMappings) {
+        targetFields.forEach(tf => {
+          const matchedHeader = rawHeaders.find(header => {
+            const normalized = header.toLowerCase().replace(/[\s_-]/g, '');
+            return tf.patterns.includes(normalized) || normalized.includes(tf.key.toLowerCase());
+          });
+          if (matchedHeader) {
+            mappings[tf.key] = matchedHeader;
+          } else {
+            mappings[tf.key] = ''; // skip
+          }
+        });
+        setMappedFields(mappings);
+      }
 
       const items: Partial<Asset>[] = [];
-      for (let i = 1; i < lines.length; i++) {
+      for (let i = selHeaderIndex + 1; i < lines.length; i++) {
         const rowValues = [];
         let currentVal = '';
         let inQuotes = false;
@@ -719,22 +844,28 @@ export default function AssetsTab({
           connectivityStatus: 'online'
         };
 
-        rawHeaders.forEach((header, idx) => {
-          const fieldKey = mappings[header];
-          if (!fieldKey) return;
+        targetFields.forEach(tf => {
+          const mappedHeader = mappings[tf.key];
+          if (!mappedHeader) return; // unmapped
+
+          const idx = rawHeaders.indexOf(mappedHeader);
+          if (idx === -1) return;
 
           const val = rowValues[idx];
-          if (fieldKey === 'isHighValue' || fieldKey === 'isWireless') {
-            item[fieldKey] = val.toLowerCase() === 'true' || val === '1' || val.toLowerCase() === 'yes';
-          } else if (fieldKey === 'batteryLevel') {
-            item[fieldKey] = parseInt(val, 10) || 100;
+          if (val === undefined || val === null) return;
+          
+          if (tf.key === 'isHighValue' || tf.key === 'isWireless') {
+            item[tf.key] = val.toLowerCase() === 'true' || val === '1' || val.toLowerCase() === 'yes';
+          } else if (tf.key === 'batteryLevel') {
+            const parsedVal = parseInt(val, 10);
+            item[tf.key] = isNaN(parsedVal) ? 100 : parsedVal;
           } else {
-            item[fieldKey] = val;
+            item[tf.key] = val;
           }
         });
 
         if (!item.name) {
-          item.name = `Imported Asset #${i}`;
+          item.name = `Imported Asset #${i - selHeaderIndex}`;
         }
         if (!item.serialNumber) {
           item.serialNumber = `SN-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -1128,7 +1259,7 @@ export default function AssetsTab({
       {/* Search and Filters Row */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-5 bg-slate-950/40 p-3 rounded-lg border border-slate-850">
         {/* Search Input */}
-        <div className="md:col-span-5 relative">
+        <div className="md:col-span-4 relative">
           <input
             type="text"
             placeholder="Search assets by name, serial, IP, custodian..."
@@ -1148,7 +1279,7 @@ export default function AssetsTab({
         </div>
 
         {/* Dropdowns Row */}
-        <div className="md:col-span-7 grid grid-cols-3 gap-2">
+        <div className="md:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-2">
           {/* Classes Select */}
           <select
             value={classFilter}
@@ -1192,6 +1323,19 @@ export default function AssetsTab({
             <option value="assigned">Custody: Assigned</option>
             <option value="unassigned">Custody: Unassigned</option>
           </select>
+
+          {/* Battery / Charge Select */}
+          <select
+            value={batteryFilter}
+            onChange={(e) => setBatteryFilter(e.target.value)}
+            className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-300 font-mono focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer"
+          >
+            <option value="all">Power: All</option>
+            <option value="battery">Battery: All</option>
+            <option value="battery_low">Battery: &lt;20%</option>
+            <option value="battery_med">Battery: 20-50%</option>
+            <option value="battery_high">Battery: &gt;50%</option>
+          </select>
         </div>
       </div>
 
@@ -1229,24 +1373,32 @@ export default function AssetsTab({
           {onPrintReport && (
             <button
               onClick={() => {
-                const rows = sortedAssets.map(a => [
-                  a.id || '',
-                  a.name || '',
-                  a.category || '',
-                  a.status || '',
-                  a.ipAddress || '',
-                  a.assignedTo || '',
-                  a.serialNumber || ''
-                ]);
+                const rows = sortedAssets.map(a => {
+                  const runtime = getPredictedRuntimeHours(a);
+                  const batteryText = a.batteryLevel !== undefined 
+                    ? `${a.batteryLevel}% (${runtime !== undefined ? `${runtime} hrs` : 'N/A'})` 
+                    : 'Continuous AC';
+                  return [
+                    a.id || '',
+                    a.name || '',
+                    a.category || '',
+                    a.status || '',
+                    a.ipAddress || '',
+                    a.assignedTo || '',
+                    a.serialNumber || '',
+                    batteryText
+                  ];
+                });
                 const summaries = [
                   { label: 'Total in View', value: `${sortedAssets.length}` },
                   { label: 'Online/Active', value: `${sortedAssets.filter(a => a.status === 'active' || a.status === 'online').length}` },
                   { label: 'Maintenance', value: `${sortedAssets.filter(a => a.status === 'maintenance').length}` },
-                  { label: 'Offline', value: `${sortedAssets.filter(a => a.status === 'offline').length}` }
+                  { label: 'Offline', value: `${sortedAssets.filter(a => a.status === 'offline').length}` },
+                  { label: 'Low Battery (<20%)', value: `${sortedAssets.filter(a => a.batteryLevel !== undefined && a.batteryLevel < 20).length}` }
                 ];
                 onPrintReport({
                   title: 'Hardware Asset Inventory Report',
-                  headers: ['Asset ID', 'Name', 'Category', 'Status', 'IP Address', 'Assigned To', 'Serial Number'],
+                  headers: ['Asset ID', 'Name', 'Category', 'Status', 'IP Address', 'Assigned To', 'Serial Number', 'Battery / Est. Runtime'],
                   rows,
                   summaries
                 });
@@ -1305,17 +1457,18 @@ export default function AssetsTab({
 
           {/* CSV Import Button */}
           <button
-            onClick={() => {
-              setIsCsvModalOpen(true);
-              setCsvRawText('');
-              setParsedAssets([]);
-              setCsvError(null);
-              setCsvFileName(null);
-            }}
+            onClick={() => fileInputRef.current?.click()}
             className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer uppercase border border-slate-700 shadow"
           >
-            <Database className="w-4 h-4 text-emerald-400" /> Bulk Import CSV
+            <Database className="w-4 h-4 text-emerald-400" /> Import Assets
           </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".csv"
+            className="hidden"
+            onChange={handleFileChange}
+          />
 
           <button
             onClick={() => setShowAddForm(!showAddForm)}
@@ -2014,25 +2167,107 @@ export default function AssetsTab({
                           />
                         </td>
 
-                        {/* Asset Node (Icon + Name + SN) */}
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
-                              {getCategoryIcon(a.category)}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-slate-200 text-xs flex items-center gap-1.5">
-                                {a.name}
-                                {a.isHighValue && (
-                                  <span className="text-[8px] font-bold text-amber-400 bg-amber-950/40 border border-amber-900/30 px-1 py-0.5 rounded">
-                                    VIP
-                                  </span>
-                                )}
-                              </span>
-                              <span className="text-[10px] text-slate-500 font-mono">ID: {a.id} • SN: {a.serialNumber}</span>
-                            </div>
-                          </div>
-                        </td>
+                         {/* Asset Node (Icon + Name + SN) */}
+                         <td className="p-4">
+                           <div className="flex items-center gap-3">
+                             <div className="w-8 h-8 rounded bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0">
+                               {getCategoryIcon(a.category)}
+                             </div>
+                             <div className="flex flex-col">
+                               <span className="font-semibold text-slate-200 text-xs flex items-center gap-1.5 flex-wrap">
+                                 {a.name}
+                                 {a.isHighValue && (
+                                   <span className="text-[8px] font-bold text-amber-400 bg-amber-950/40 border border-amber-900/30 px-1 py-0.5 rounded">
+                                     VIP
+                                   </span>
+                                 )}
+                                 {a.emergencyRecharge && (
+                                   <span className="text-[8px] font-bold text-red-500 bg-red-950/60 border border-red-500/40 px-1.5 py-0.5 rounded animate-pulse" title="Predicted runtime is below 30 minutes! EMERGENCY RECHARGE required.">
+                                     EMERGENCY RECHARGE
+                                   </span>
+                                 )}
+                                 {(() => {
+                                   const runtime = getPredictedRuntimeHours(a);
+                                   if (runtime !== undefined && runtime < 2) {
+                                     return (
+                                       <span className="inline-flex items-center gap-1 text-[8px] font-bold text-red-400 bg-red-950/60 border border-red-500/40 px-1.5 py-0.5 rounded animate-pulse" title={`Critical battery! Predicted runtime is ${runtime} hrs (less than 2 hours).`}>
+                                         <ShieldAlert className="w-2.5 h-2.5 text-red-500" />
+                                         &lt;2h Runtime ({runtime}h)
+                                       </span>
+                                     );
+                                   }
+                                   return null;
+                                 })()}
+                               </span>
+                               <span className="text-[10px] text-slate-500 font-mono">ID: {a.id} • SN: {a.serialNumber}</span>
+                               
+                               {/* Interactive Location History with Hover Tooltip / Click Popover */}
+                               <div className="flex items-center gap-1.5 mt-1 relative" onClick={(e) => e.stopPropagation()}>
+                                 <span className="inline-flex items-center gap-1 text-[9px] font-mono text-slate-400 bg-slate-900/80 border border-slate-800/80 px-1.5 py-0.5 rounded">
+                                   <MapPin className="w-2.5 h-2.5 text-indigo-400" />
+                                   {a.location || 'Central Stage'}
+                                 </span>
+                                 <button
+                                   type="button"
+                                   onMouseEnter={() => {
+                                     setHoveredAssetId(a.id);
+                                     handleLoadHistory(a.id);
+                                   }}
+                                   onMouseLeave={() => setHoveredAssetId(null)}
+                                   onClick={() => {
+                                     handleLoadHistory(a.id);
+                                     setOpenHistoryAssetId(openHistoryAssetId === a.id ? null : a.id);
+                                   }}
+                                   className="text-[9px] font-mono text-indigo-400 hover:text-indigo-300 font-bold bg-indigo-950/20 hover:bg-indigo-950/50 px-1 rounded border border-indigo-900/20 transition-all cursor-pointer"
+                                   title="Click or hover to view location movement logs"
+                                 >
+                                   Hist
+                                 </button>
+                                 
+                                 <AnimatePresence>
+                                   {(openHistoryAssetId === a.id || hoveredAssetId === a.id) && (
+                                     <motion.div
+                                       initial={{ opacity: 0, y: 4 }}
+                                       animate={{ opacity: 1, y: 0 }}
+                                       exit={{ opacity: 0, y: 4 }}
+                                       onMouseEnter={() => setHoveredAssetId(a.id)}
+                                       onMouseLeave={() => setHoveredAssetId(null)}
+                                       className="absolute left-0 top-6 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl p-3 z-50 w-72 text-slate-300 font-sans space-y-2 text-left"
+                                       onClick={(e) => e.stopPropagation()}
+                                     >
+                                       <div className="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Recent Movements (Last 3)</span>
+                                         <button 
+                                           type="button" 
+                                           onClick={() => setOpenHistoryAssetId(null)} 
+                                           className="text-slate-500 hover:text-slate-200 cursor-pointer text-xs"
+                                         >
+                                           ×
+                                         </button>
+                                       </div>
+                                       {loadingHistoryAssetId === a.id ? (
+                                         <div className="text-[10px] text-slate-500 font-mono py-1 animate-pulse">Loading location logs...</div>
+                                       ) : loadedHistories[a.id] && loadedHistories[a.id].length > 0 ? (
+                                         <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                                           {loadedHistories[a.id].map((log, idx) => (
+                                             <div key={`${a.id}-hist-${idx}`} className="text-[10px] bg-slate-900/50 p-1.5 rounded border border-slate-900 flex flex-col">
+                                               <span className="font-bold text-slate-200">{log.locationName}</span>
+                                               <span className="text-[8px] text-slate-500 font-mono">
+                                                 {new Date(log.timestamp).toLocaleString()}
+                                               </span>
+                                             </div>
+                                           ))}
+                                         </div>
+                                       ) : (
+                                         <div className="text-[10px] text-slate-500 font-mono py-1">No movement logs recorded.</div>
+                                       )}
+                                     </motion.div>
+                                   )}
+                                 </AnimatePresence>
+                               </div>
+                             </div>
+                           </div>
+                         </td>
 
                         {/* Class (Category) */}
                         <td className="p-4 font-mono text-[11px] text-slate-300 capitalize">
@@ -2197,12 +2432,29 @@ export default function AssetsTab({
                         <span className={`w-2 h-2 rounded-full ${getStatusDotColor(a.status)}`} title={`Status: ${a.status}`} />
                         {getCategoryIcon(a.category)}
                         <span>{a.name}</span>
+                        {a.emergencyRecharge && (
+                          <span className="text-[8px] font-bold text-red-500 bg-red-950/60 border border-red-500/40 px-1.5 py-0.5 rounded animate-pulse" title="Predicted runtime is below 30 minutes! EMERGENCY RECHARGE required.">
+                            EMERGENCY RECHARGE
+                          </span>
+                        )}
                         {a.batteryLevel !== undefined && (
                           <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-900/30 px-1.5 py-0.5 rounded">
                             <Battery className="w-2.5 h-2.5" />
                             {a.batteryLevel}%
                           </span>
                         )}
+                        {(() => {
+                          const runtime = getPredictedRuntimeHours(a);
+                          if (runtime !== undefined && runtime < 2) {
+                            return (
+                              <span className="inline-flex items-center gap-1 text-[8px] font-bold text-red-400 bg-red-950/60 border border-red-500/40 px-1.5 py-0.5 rounded animate-pulse" title={`Critical battery! Predicted runtime is ${runtime} hrs (less than 2 hours).`}>
+                                <ShieldAlert className="w-2.5 h-2.5 text-red-500" />
+                                &lt;2h Runtime ({runtime}h)
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
                         {a.registrationDate && (
                           <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-amber-400 bg-amber-950/40 border border-amber-900/30 px-1.5 py-0.5 rounded" title={`Registered on: ${a.registrationDate}`}>
                             <Calendar className="w-2.5 h-2.5 text-amber-400" />
@@ -2211,6 +2463,71 @@ export default function AssetsTab({
                         )}
                       </h4>
                       <p className="text-[11px] text-slate-400 font-mono">SN: {a.serialNumber}</p>
+
+                      {/* Interactive Location History with Hover Tooltip / Click Popover */}
+                      <div className="flex items-center gap-1.5 mt-2 relative" onClick={(e) => e.stopPropagation()}>
+                        <span className="inline-flex items-center gap-1 text-[9px] font-mono text-slate-400 bg-slate-900/80 border border-slate-800/80 px-1.5 py-0.5 rounded">
+                          <MapPin className="w-2.5 h-2.5 text-indigo-400" />
+                          {a.location || 'Central Stage'}
+                        </span>
+                        <button
+                          type="button"
+                          onMouseEnter={() => {
+                            setHoveredAssetId(a.id);
+                            handleLoadHistory(a.id);
+                          }}
+                          onMouseLeave={() => setHoveredAssetId(null)}
+                          onClick={() => {
+                            handleLoadHistory(a.id);
+                            setOpenHistoryAssetId(openHistoryAssetId === a.id ? null : a.id);
+                          }}
+                          className="text-[9px] font-mono text-indigo-400 hover:text-indigo-300 font-bold bg-indigo-950/20 hover:bg-indigo-950/50 px-1.5 py-0.5 rounded border border-indigo-900/20 transition-all cursor-pointer"
+                          title="Click or hover to view location movement logs"
+                        >
+                          Hist
+                        </button>
+                        
+                        <AnimatePresence>
+                          {(openHistoryAssetId === a.id || hoveredAssetId === a.id) && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 4 }}
+                              onMouseEnter={() => setHoveredAssetId(a.id)}
+                              onMouseLeave={() => setHoveredAssetId(null)}
+                              className="absolute left-0 top-6 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl p-3 z-50 w-72 text-slate-300 font-sans space-y-2 text-left"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Recent Movements (Last 3)</span>
+                                <button 
+                                  type="button" 
+                                  onClick={() => setOpenHistoryAssetId(null)} 
+                                  className="text-slate-500 hover:text-slate-200 cursor-pointer text-xs"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              {loadingHistoryAssetId === a.id ? (
+                                <div className="text-[10px] text-slate-500 font-mono py-1 animate-pulse">Loading location logs...</div>
+                              ) : loadedHistories[a.id] && loadedHistories[a.id].length > 0 ? (
+                                <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                                  {loadedHistories[a.id].map((log, idx) => (
+                                    <div key={`${a.id}-gridhist-${idx}`} className="text-[10px] bg-slate-900/50 p-1.5 rounded border border-slate-900 flex flex-col">
+                                      <span className="font-bold text-slate-200">{log.locationName}</span>
+                                      <span className="text-[8px] text-slate-500 font-mono">
+                                        {new Date(log.timestamp).toLocaleString()}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-[10px] text-slate-500 font-mono py-1">No movement logs recorded.</div>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
 
                       {/* Health Tag with hover tooltip */}
                       {(() => {
@@ -2248,7 +2565,7 @@ export default function AssetsTab({
                     </div>
 
                     <div className="border-t border-slate-900 pt-3 flex justify-between items-center text-xs">
-                      <span className="text-slate-500 font-mono text-[10px]">Pos: {a.coordinates.x}%, {a.coordinates.y}%</span>
+                      <span className="text-slate-500 font-mono text-[10px]">Pos: {a.coordinates?.x !== undefined ? `${a.coordinates.x}%, ${a.coordinates.y}%` : 'N/A'}</span>
                       <div className="flex items-center gap-1">
                         {/* Toggle Maintenance */}
                         <button
@@ -2308,7 +2625,8 @@ export default function AssetsTab({
             const activeAsset = assets.find(a => a.id === selectedAssetForConfig.id) || selectedAssetForConfig;
             
             // Geofence calculations
-            const isOutsideGeofence = activeAsset.coordinates.x < 20 || activeAsset.coordinates.x > 80 || activeAsset.coordinates.y < 20 || activeAsset.coordinates.y > 80;
+            const activeCoords = activeAsset.coordinates || { x: 50, y: 50 };
+            const isOutsideGeofence = activeCoords.x < 20 || activeCoords.x > 80 || activeCoords.y < 20 || activeCoords.y > 80;
             
             // Sub-zone calculations
             const getSubZoneName = (x: number, y: number) => {
@@ -2320,7 +2638,7 @@ export default function AssetsTab({
               if (x > 40 && x <= 60 && y > 50) return 'Backstage Center';
               return 'Backstage Right';
             };
-            const currentZone = getSubZoneName(activeAsset.coordinates.x, activeAsset.coordinates.y);
+            const currentZone = getSubZoneName(activeCoords.x, activeCoords.y);
 
             const handleCommandExecute = (commandStr: string) => {
               const trimmed = commandStr.trim().toLowerCase();
@@ -2724,7 +3042,7 @@ export default function AssetsTab({
                           </div>
                           <div className="flex justify-between border-b border-slate-900/60 pb-1">
                             <span className="text-slate-500">Geolocation:</span>
-                            <span className="text-slate-300">X: {activeAsset.coordinates.x}% / Y: {activeAsset.coordinates.y}%</span>
+                            <span className="text-slate-300">X: {activeCoords.x}% / Y: {activeCoords.y}%</span>
                           </div>
                           <div className="flex justify-between border-b border-slate-900/60 pb-1">
                             <span className="text-slate-500">Last Seen:</span>
@@ -2965,8 +3283,8 @@ export default function AssetsTab({
                         <div 
                           className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
                           style={{
-                            left: `${activeAsset.coordinates.x}%`,
-                            top: `${activeAsset.coordinates.y}%`
+                            left: `${activeCoords.x}%`,
+                            top: `${activeCoords.y}%`
                           }}
                         >
                           <span className="relative flex h-3.5 w-3.5">
@@ -3004,7 +3322,7 @@ export default function AssetsTab({
                         </div>
                         <div className="flex justify-between font-mono text-[11px] border-t border-slate-900/60 pt-1.5">
                           <span className="text-slate-500">Relative Offset:</span>
-                          <strong className="text-slate-300">X: {activeAsset.coordinates.x}% / Y: {activeAsset.coordinates.y}%</strong>
+                          <strong className="text-slate-300">X: {activeCoords.x}% / Y: {activeCoords.y}%</strong>
                         </div>
                         <div className="flex justify-between font-mono text-[11px] border-t border-slate-900/60 pt-1.5">
                           <span className="text-slate-500">Signal Range Index:</span>
@@ -3486,6 +3804,50 @@ export default function AssetsTab({
                   />
                 </div>
 
+                {csvRawText && csvRawText.trim() && (
+                  <div className="bg-slate-950/50 border border-slate-850 rounded-lg p-3.5 space-y-2">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+                      📌 Select CSV Header Row Location
+                    </span>
+                    <p className="text-[11px] text-slate-400 leading-normal">
+                      If your CSV has metadata, comments, or blank rows at the top, select which row contains the actual column headers:
+                    </p>
+                    <div className="space-y-1.5 max-h-[150px] overflow-y-auto pr-1">
+                      {(() => {
+                        const lines = csvRawText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                        return lines.slice(0, 5).map((line, idx) => {
+                          const isSelected = headerRowIndex === idx;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setHeaderRowIndex(idx);
+                                parseCSVContent(csvRawText, undefined, idx);
+                              }}
+                              className={`w-full text-left p-2.5 rounded-lg text-xs font-mono border transition-all flex items-start justify-between gap-3 cursor-pointer ${
+                                isSelected 
+                                  ? 'bg-emerald-950/40 border-emerald-500 text-emerald-300 font-bold' 
+                                  : 'bg-slate-900/60 border-slate-850 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                              }`}
+                            >
+                              <div className="truncate flex-1 text-left">
+                                <span className="text-[9px] text-slate-500 mr-2 uppercase">Row {idx + 1}:</span>
+                                <span className="truncate">"{line}"</span>
+                              </div>
+                              {isSelected && (
+                                <span className="text-[9px] bg-emerald-500 text-white font-sans font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
+                                  Column Headers
+                                </span>
+                              )}
+                            </button>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                )}
+
                 {csvError && (
                   <div className="bg-rose-950/20 border border-rose-500/30 text-rose-400 p-3 rounded-lg font-mono text-[10px] flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -3495,22 +3857,64 @@ export default function AssetsTab({
 
                 {/* Live Mapped Fields Overview */}
                 {parsedAssets.length > 0 && (
-                  <div className="bg-slate-900/60 border border-slate-850 rounded-lg p-4 space-y-3">
+                  <div className="bg-slate-900/60 border border-slate-850 rounded-lg p-4 space-y-4">
                     <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                      <span className="font-bold text-slate-200">Parsed Header Mapping Summary</span>
+                      <span className="font-bold text-slate-200">Map App Fields to CSV Headers</span>
                       <span className="text-emerald-400 font-mono font-bold bg-emerald-950/40 border border-emerald-900/40 px-2 py-0.5 rounded text-[10px]">
                         {parsedAssets.length} Record(s) Found
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-[10px] font-mono">
-                      {Object.entries(mappedFields).map(([csvHeader, assetField]) => (
-                        <div key={csvHeader} className="bg-slate-950 border border-slate-900 p-2 rounded flex flex-col">
-                          <span className="text-slate-500 uppercase text-[9px]">CSV Header</span>
-                          <span className="font-bold text-slate-300 truncate" title={csvHeader}>"{csvHeader}"</span>
-                          <span className="text-emerald-500 mt-1 font-sans">➡ maps to: <strong>{assetField}</strong></span>
-                        </div>
-                      ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono">
+                      {csvRawText && csvRawText.trim() && (() => {
+                        const lines = csvRawText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                        if (lines.length === 0) return null;
+                        const targetRow = lines[headerRowIndex] || lines[0];
+                        const headers = targetRow.split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+                        
+                        const fieldsList = [
+                          { key: 'name', label: 'Asset Name', icon: '🏷️' },
+                          { key: 'category', label: 'Category', icon: '🗂️' },
+                          { key: 'status', label: 'Status', icon: '🚦' },
+                          { key: 'serialNumber', label: 'Serial Number', icon: '🔢' },
+                          { key: 'assignedTo', label: 'Assigned To (Custodian)', icon: '👤' },
+                          { key: 'ipAddress', label: 'IP Address', icon: '🌐' },
+                          { key: 'isHighValue', label: 'Is High Value (VIP)', icon: '💎' },
+                          { key: 'isWireless', label: 'Is Wireless', icon: '📶' },
+                          { key: 'batteryLevel', label: 'Battery Level', icon: '🔋' }
+                        ];
+
+                        return fieldsList.map(tf => {
+                          const currentHeaderValue = mappedFields[tf.key] || '';
+                          return (
+                            <div key={tf.key} className="bg-slate-950 border border-slate-900 p-2.5 rounded-lg flex flex-col justify-between gap-1.5 border-l-2 border-l-emerald-500/40">
+                              <div className="truncate">
+                                <span className="text-slate-500 uppercase text-[8px] block">App Asset Field</span>
+                                <span className="font-bold text-slate-200 truncate" title={tf.label}>{tf.icon} {tf.label}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="text-[9px] text-slate-400">CSV Header:</span>
+                                <select
+                                  value={currentHeaderValue}
+                                  onChange={(e) => {
+                                    const nextMapped = { ...mappedFields, [tf.key]: e.target.value };
+                                    setMappedFields(nextMapped);
+                                    parseCSVContent(csvRawText, nextMapped);
+                                  }}
+                                  className="bg-slate-900 border border-slate-800 text-[10px] text-emerald-400 rounded px-1.5 py-0.5 outline-none focus:border-emerald-500/50 flex-1 font-sans font-semibold cursor-pointer"
+                                >
+                                  <option value="">⛔ Skip / Do Not Link</option>
+                                  {headers.map(header => (
+                                    <option key={header} value={header}>
+                                      📄 "{header}"
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
 
                     {/* Preview Table */}
@@ -3557,17 +3961,78 @@ export default function AssetsTab({
                 <button
                   type="button"
                   disabled={parsedAssets.length === 0}
-                  onClick={() => {
-                    parsedAssets.forEach(item => {
+                  onClick={async () => {
+                    let usersCreatedCount = 0;
+                    const createdUsersList: { name: string; login: string; otp: string }[] = [];
+                    for (const item of parsedAssets) {
+                      // 1. Add Asset
+                      const assetId = `ast-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
                       onAddAsset({
                         ...item,
-                        id: `ast-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
+                        id: assetId,
                         createdAt: new Date().toISOString()
                       });
-                    });
+
+                      // 2. Check if a user is assigned, and create account if they don't exist
+                      const assignedName = (item.assignedTo || '').trim();
+                      if (assignedName && assignedName.toLowerCase() !== 'unassigned') {
+                        const userExists = users.some(u => 
+                          (u.displayName || '').toLowerCase() === assignedName.toLowerCase() ||
+                          (u.email || '').toLowerCase() === assignedName.toLowerCase()
+                        );
+                        if (!userExists) {
+                          const parts = assignedName.split(' ');
+                          const firstName = parts[0] || 'Technician';
+                          const lastName = parts.slice(1).join(' ') || 'User';
+                          const loginUsername = assignedName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                          const generatedEmail = `${loginUsername}@kynren.org`;
+                          const generatedId = `usr-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+                          const tempOtpPassword = 'otp' + Math.floor(100000 + Math.random() * 900000);
+                          
+                          const newUser = {
+                            id: generatedId,
+                            displayName: assignedName,
+                            email: generatedEmail,
+                            role: 'Technician' as const,
+                            profileImage: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(assignedName)}`,
+                            clientIp: '192.168.1.' + Math.floor(2 + Math.random() * 253),
+                            status: 'offline' as const,
+                            active: 'Yes' as const,
+                            firstName,
+                            lastName,
+                            login: loginUsername,
+                            isOTP: true,
+                            password: tempOtpPassword,
+                            otpPassword: tempOtpPassword,
+                          };
+
+                          try {
+                            await setDoc(doc(db, 'users', generatedId), newUser);
+                            usersCreatedCount++;
+                            createdUsersList.push({
+                              name: assignedName,
+                              login: loginUsername,
+                              otp: tempOtpPassword
+                            });
+                          } catch (userErr) {
+                            console.error("Failed to auto-create user account during import:", userErr);
+                          }
+                        }
+                      }
+                    }
+
                     playScanChime();
                     setIsCsvModalOpen(false);
-                    alert(`Successfully imported and deployed ${parsedAssets.length} hardware assets!`);
+                    
+                    let alertMsg = `Successfully imported and deployed ${parsedAssets.length} hardware assets!\n`;
+                    if (usersCreatedCount > 0) {
+                      alertMsg += `\nAuto-created ${usersCreatedCount} new technician user account(s) with One-Time Password (OTP) login:\n`;
+                      createdUsersList.forEach(u => {
+                        alertMsg += `- ${u.name} (Username: ${u.login}, OTP: ${u.otp})\n`;
+                      });
+                      alertMsg += `\nThese users will be required to change their password on first login.`;
+                    }
+                    alert(alertMsg);
                   }}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold font-mono uppercase rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                 >

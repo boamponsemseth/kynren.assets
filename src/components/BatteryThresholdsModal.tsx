@@ -168,6 +168,69 @@ export default function BatteryThresholdsModal({
                 </span>
               </div>
 
+              {/* Presets Selection */}
+              <div className="bg-slate-950/60 p-3 rounded-lg border border-slate-800/80 space-y-2 text-left">
+                <span className="block text-[10px] text-slate-500 font-mono uppercase tracking-wider font-bold">
+                  ⚡ Apply Global Manufacturer Presets
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setThresholds({
+                        Projector: 10,
+                        Switch: 10,
+                        Radio: 15,
+                        DMX: 10,
+                        Speaker: 15,
+                        Pyrotechnics: 20
+                      });
+                      setSuccess(false);
+                      setError(null);
+                    }}
+                    className="py-1 px-2 border border-slate-800 hover:border-emerald-500 bg-slate-900 hover:bg-emerald-950/20 text-[10px] text-slate-300 hover:text-emerald-400 font-mono font-bold rounded uppercase transition-all cursor-pointer text-center"
+                  >
+                    🔋 Eco Guard
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setThresholds({
+                        Projector: 20,
+                        Switch: 15,
+                        Radio: 20,
+                        DMX: 15,
+                        Speaker: 20,
+                        Pyrotechnics: 25
+                      });
+                      setSuccess(false);
+                      setError(null);
+                    }}
+                    className="py-1 px-2 border border-slate-800 hover:border-cyan-500 bg-slate-900 hover:bg-cyan-950/20 text-[10px] text-slate-300 hover:text-cyan-400 font-mono font-bold rounded uppercase transition-all cursor-pointer text-center"
+                  >
+                    ⚖️ Balanced
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setThresholds({
+                        Projector: 30,
+                        Switch: 25,
+                        Radio: 30,
+                        DMX: 25,
+                        Speaker: 30,
+                        Pyrotechnics: 40
+                      });
+                      setSuccess(false);
+                      setError(null);
+                    }}
+                    className="py-1 px-2 border border-slate-800 hover:border-rose-500 bg-slate-900 hover:bg-rose-950/20 text-[10px] text-slate-300 hover:text-rose-400 font-mono font-bold rounded uppercase transition-all cursor-pointer text-center"
+                  >
+                    🛡️ Safety First
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-5">
                 {Object.entries(thresholds).map(([category, value]) => (
                   <div key={category} className="space-y-1.5 p-3 bg-slate-950/40 rounded-lg border border-slate-800/60 hover:border-slate-800 transition-all">

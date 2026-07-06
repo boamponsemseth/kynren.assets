@@ -18,6 +18,11 @@ export interface UserPreferences {
   widgetOrder?: string[];
   pinnedWidgets?: string[];
   hiddenWidgets?: string[];
+  deviceName?: string;
+  subnetMask?: string;
+  defaultGateway?: string;
+  maxLatencyThreshold?: number;
+  autoRetry?: boolean;
 }
 
 export interface Asset {
@@ -48,6 +53,13 @@ export interface Asset {
   model?: string;
   group?: string;
   deviceType?: string;
+  isBatteryPowered?: boolean;
+  emergencyRecharge?: boolean;
+  batteryChangeHistory?: Array<{
+    date: string;
+    technicianName: string;
+    batterySerialNumber: string;
+  }>;
 }
 
 export interface DropdownOption {

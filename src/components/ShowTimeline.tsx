@@ -10,24 +10,31 @@ import {
   Filter, 
   Sparkles,
   Info,
-  AlertCircle
+  AlertCircle,
+  Download
 } from 'lucide-react';
 
 interface ShowTimelineProps {
   events: ShowTimelineEvent[];
   onAddEvent: (event: Partial<ShowTimelineEvent>) => Promise<void>;
   onDeleteEvent: (id: string) => Promise<void>;
+  onUpdateEvent?: (id: string, updates: Partial<ShowTimelineEvent>) => Promise<void>;
 }
 
 export default function ShowTimeline({
   events,
   onAddEvent,
-  onDeleteEvent
+  onDeleteEvent,
+  onUpdateEvent
 }: ShowTimelineProps) {
   const [filterType, setFilterType] = useState<'all' | 'show' | 'rehearsal' | 'maintenance'>('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<ShowTimelineEvent | null>(null);
   
+  // Drag and Drop Conflict States
+  const [draggedEvent, setDraggedEvent] = useState<ShowTimelineEvent | null>(null);
+  const [dragOverEventId, setDragOverEventId] = useState<string | null>(null);
+
   // Form State
   const [title, setTitle] = useState('');
   const [type, setType] = useState<'show' | 'rehearsal' | 'maintenance'>('show');
@@ -64,6 +71,68 @@ export default function ShowTimeline({
   const filteredEvents = events
     .filter(event => filterType === 'all' || event.type === filterType)
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+  // Conflict Check (Overlapping Events)
+  const hasConflict = (ev: ShowTimelineEvent) => {
+    const startA = new Date(ev.startTime).getTime();
+    const endA = new Date(ev.endTime).getTime();
+    if (isNaN(startA) || isNaN(endA)) return false;
+
+    return events.some(other => {
+      if (other.id === ev.id) return false;
+      const startB = new Date(other.startTime).getTime();
+      const endB = new Date(other.endTime).getTime();
+      if (isNaN(startB) || isNaN(endB)) return false;
+
+      return startA < endB && startB < endA;
+    });
+  };
+
+  // Export Filtered events as iCal format
+  const formatICalDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const pad = (num: number) => String(num).padStart(2, '0');
+    return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+  };
+
+  const exportToICal = () => {
+    const icalContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Showground Operations//Show Timeline//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH'
+    ];
+
+    filteredEvents.forEach(event => {
+      const start = formatICalDate(event.startTime);
+      const end = formatICalDate(event.endTime);
+      const stamp = formatICalDate(new Date().toISOString());
+      
+      icalContent.push('BEGIN:VEVENT');
+      icalContent.push(`UID:${event.id || Math.random().toString(36).substring(2, 9)}`);
+      icalContent.push(`DTSTAMP:${stamp}`);
+      if (start) icalContent.push(`DTSTART:${start}`);
+      if (end) icalContent.push(`DTEND:${end}`);
+      icalContent.push(`SUMMARY:${event.title.replace(/[,;]/g, '\\$&')}`);
+      icalContent.push(`DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n').replace(/[,;]/g, '\\$&')}`);
+      icalContent.push(`LOCATION:${(event.location || '').replace(/[,;]/g, '\\$&')}`);
+      icalContent.push('END:VEVENT');
+    });
+
+    icalContent.push('END:VCALENDAR');
+
+    const blob = new Blob([icalContent.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `show-timeline-${filterType}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const getEventIcon = (type: string) => {
     switch (type) {
@@ -120,12 +189,22 @@ export default function ShowTimeline({
           <p className="text-[11px] text-slate-400 font-mono mt-1">Show performances, rehearsal blocks, and urgent maintenance window scheduling.</p>
         </div>
         
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-mono text-[10px] font-bold rounded-lg transition-all flex items-center gap-1 uppercase"
-        >
-          <Plus className="w-3.5 h-3.5" /> Schedule Event
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={exportToICal}
+            className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-mono text-[10px] font-bold rounded-lg border border-slate-800 transition-all flex items-center gap-1 uppercase cursor-pointer"
+            title="Export current filtered timeline events as an iCal (.ics) file"
+          >
+            <Download className="w-3.5 h-3.5 text-rose-500" /> Export iCal
+          </button>
+          
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-mono text-[10px] font-bold rounded-lg transition-all flex items-center gap-1 uppercase cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" /> Schedule Event
+          </button>
+        </div>
       </div>
 
       {/* Filter Chips */}
@@ -253,7 +332,7 @@ export default function ShowTimeline({
         </form>
       )}
 
-      {/* Vertical Timeline Layout */}
+      {/* Vertical Timeline Layout with Motion / Drag and Drop Support */}
       <div className="max-h-[380px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800 space-y-4">
         {filteredEvents.length === 0 ? (
           <div className="p-8 text-center text-slate-500 text-xs font-sans border border-slate-800/50 bg-slate-950/20 rounded-xl">
@@ -261,64 +340,129 @@ export default function ShowTimeline({
           </div>
         ) : (
           <div className="relative border-l border-slate-800 ml-4 pl-6 space-y-6 py-2">
-            {filteredEvents.map((event) => {
-              const startDate = new Date(event.startTime);
-              const endDate = new Date(event.endTime);
-              const timeString = `${startDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} | ${startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-              
-              return (
-                <div key={event.id} className="relative group">
-                  {/* Timeline bullet icon */}
-                  <span className="absolute -left-[38px] top-0.5 z-10">
-                    {getEventIcon(event.type)}
-                  </span>
-
-                  {/* Event content card */}
-                  <div className="bg-slate-950/50 border border-slate-850 rounded-xl p-3.5 hover:border-slate-700 hover:bg-slate-900/10 transition-all">
-                    <div className="flex justify-between items-start gap-4 mb-1.5">
-                      <div>
-                        <span className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-full uppercase tracking-wider ${getEventBadgeColor(event.type)}`}>
-                          {event.type}
-                        </span>
-                        <h4 className="text-slate-100 font-bold text-sm mt-1.5 group-hover:text-rose-400 transition-colors">{event.title}</h4>
-                      </div>
+            <AnimatePresence mode="popLayout">
+              {filteredEvents.map((event) => {
+                const startDate = new Date(event.startTime);
+                const endDate = new Date(event.endTime);
+                const timeString = `${startDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} | ${startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                
+                const isConflict = hasConflict(event);
+                
+                return (
+                  <motion.div 
+                    key={event.id} 
+                    layout
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.25 }}
+                    className="relative group"
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedEvent(event);
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragEnd={() => {
+                      setDraggedEvent(null);
+                      setDragOverEventId(null);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (draggedEvent && draggedEvent.id !== event.id) {
+                        setDragOverEventId(event.id);
+                      }
+                    }}
+                    onDragLeave={() => {
+                      setDragOverEventId(null);
+                    }}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      if (!draggedEvent || draggedEvent.id === event.id) return;
                       
-                      <div className="flex items-center gap-1.5">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase font-mono font-bold ${
-                          event.status === 'ongoing' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 animate-pulse' :
-                          event.status === 'upcoming' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' :
-                          'bg-slate-500/15 text-slate-500 border border-slate-800'
-                        }`}>
-                          {event.status}
-                        </span>
+                      if (onUpdateEvent) {
+                        // Reschedule dragged event into the occupied slot of target event (causes an overlap warning)
+                        await onUpdateEvent(draggedEvent.id, {
+                          startTime: event.startTime,
+                          endTime: event.endTime
+                        });
+                      }
+                      setDraggedEvent(null);
+                      setDragOverEventId(null);
+                    }}
+                  >
+                    {/* Warning tooltip when dragged into occupied time slot */}
+                    {draggedEvent && draggedEvent.id !== event.id && dragOverEventId === event.id && (
+                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-red-600 text-white font-mono text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xl border border-red-400 z-50 whitespace-nowrap animate-bounce flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        WARNING: TIME SLOT OCCUPIED BY {event.title.toUpperCase()}!
+                      </div>
+                    )}
+
+                    {/* Timeline bullet icon */}
+                    <span className="absolute -left-[38px] top-0.5 z-10">
+                      {getEventIcon(event.type)}
+                    </span>
+
+                    {/* Event content card - highlighted Red if conflicting */}
+                    <div className={`rounded-xl p-3.5 transition-all ${
+                      isConflict 
+                        ? 'bg-red-950/25 border-2 border-red-600/80 shadow-[0_0_12px_rgba(239,68,68,0.2)]' 
+                        : 'bg-slate-950/50 border border-slate-850 hover:border-slate-700 hover:bg-slate-900/10'
+                    }`}>
+                      <div className="flex justify-between items-start gap-4 mb-1.5">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-full uppercase tracking-wider ${getEventBadgeColor(event.type)}`}>
+                              {event.type}
+                            </span>
+                            {isConflict && (
+                              <span className="px-1.5 py-0.5 bg-red-600/20 text-red-400 border border-red-500/30 rounded text-[8px] font-mono font-bold flex items-center gap-1 animate-pulse uppercase tracking-wide">
+                                ⚠️ Schedule Conflict
+                              </span>
+                            )}
+                          </div>
+                          <h4 className={`font-bold text-sm mt-1.5 transition-colors ${
+                            isConflict ? 'text-red-300 font-sans' : 'text-slate-100 group-hover:text-rose-400'
+                          }`}>{event.title}</h4>
+                        </div>
                         
-                        {/* Always Red Delete Button */}
-                        <button
-                          onClick={() => setEventToDelete(event)}
-                          className="p-1 bg-red-500/10 hover:bg-red-500/20 rounded text-red-500 hover:text-red-400 border border-red-500/20 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-                          title="Remove from Timeline"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase font-mono font-bold ${
+                            event.status === 'ongoing' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 animate-pulse' :
+                            event.status === 'upcoming' ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30' :
+                            'bg-slate-500/15 text-slate-500 border border-slate-800'
+                          }`}>
+                            {event.status}
+                          </span>
+                          
+                          {/* Always Red Delete Button */}
+                          <button
+                            onClick={() => setEventToDelete(event)}
+                            className="p-1 bg-red-500/10 hover:bg-red-500/20 rounded text-red-500 hover:text-red-400 border border-red-500/20 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                            title="Remove from Timeline"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <p className={`text-xs leading-relaxed font-sans ${isConflict ? 'text-red-200/80' : 'text-slate-300'}`}>{event.description}</p>
+
+                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 pt-2.5 border-t border-slate-900/60 font-mono text-[10px] text-slate-400">
+                        <div className="flex items-center gap-1.5">
+                          <Clock className={`w-3.5 h-3.5 ${isConflict ? 'text-red-400' : 'text-slate-500'}`} />
+                          <span className={isConflict ? 'text-red-400 font-bold' : ''}>{timeString}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className={`w-3.5 h-3.5 ${isConflict ? 'text-red-400' : 'text-slate-500'}`} />
+                          <span className={isConflict ? 'text-red-300' : 'text-slate-300'}>{event.location}</span>
+                        </div>
                       </div>
                     </div>
-
-                    <p className="text-xs text-slate-300 leading-relaxed font-sans">{event.description}</p>
-
-                    <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 pt-2.5 border-t border-slate-900/60 font-mono text-[10px] text-slate-400">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-slate-500" />
-                        <span>{timeString}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                        <span className="text-slate-300">{event.location}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )}
       </div>

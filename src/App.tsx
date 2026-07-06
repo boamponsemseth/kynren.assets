@@ -129,6 +129,7 @@ import CategoryBatteryDrainD3 from './components/CategoryBatteryDrainD3';
 import PasswordManagement from './components/PasswordManagement';
 import VirtualAssistant from './components/VirtualAssistant';
 import BatteryThresholdsModal from './components/BatteryThresholdsModal';
+import NvrCameras from './components/NvrCameras';
 
 // Recharts for analytics
 import { 
@@ -157,6 +158,7 @@ import {
   Volume2, 
   Terminal, 
   Search, 
+  Tv, 
   Bot, 
   ShieldAlert, 
   CheckCircle,
@@ -505,7 +507,7 @@ export default function App() {
   const [showMetricsSearch, setShowMetricsSearch] = useState(false);
   const [autoShutdownEnabled, setAutoShutdownEnabled] = useState(false);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
-  const [expandedModalTab, setExpandedModalTab] = useState<'chart' | 'history' | 'compare'>('chart');
+  const [expandedModalTab, setExpandedModalTab] = useState<'chart' | 'history' | 'compare' | 'forecast'>('chart');
 
   // Gmail Sending & Integration States
   const [gmailAccessToken, setGmailAccessToken] = useState<string | null>(null);
@@ -540,6 +542,37 @@ export default function App() {
     }
     return data;
   }, [metricsRefreshTrigger]);
+
+  // 7-Day forecasted future battery drain based on consumption patterns
+  const batteryForecast7d = useMemo(() => {
+    const categories = ['Radio', 'Speaker', 'Pyrotechnics', 'Projector', 'DMX', 'Switch'];
+    const now = new Date();
+    const data = [];
+    
+    // Calculate average hourly drain from the last 7 days for each category
+    const avgDrainPerCategory: Record<string, number> = {};
+    categories.forEach(cat => {
+      const sum = batteryCategoryDrain7d.reduce((acc, row) => acc + (row[cat] || 0), 0);
+      avgDrainPerCategory[cat] = sum / batteryCategoryDrain7d.length;
+    });
+
+    // Forecast for today (100% full reference) and the next 7 days
+    for (let i = 0; i <= 7; i++) {
+      const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+      const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      const row: any = { date: dateStr, dayLabel: i === 0 ? 'Today (100%)' : `Day +${i}` };
+      
+      categories.forEach(cat => {
+        const hourlyDrain = avgDrainPerCategory[cat] || 3.0;
+        // Assume active usage of 6 hours per day in Durham Auckland Stage operations
+        const dailyDrain = hourlyDrain * 6;
+        const forecastedLevel = Math.max(0, 100 - i * dailyDrain);
+        row[cat] = parseFloat(forecastedLevel.toFixed(1));
+      });
+      data.push(row);
+    }
+    return data;
+  }, [batteryCategoryDrain7d]);
 
   const deploymentsData = useMemo(() => {
     // Generate dates for the last 30 days
@@ -831,6 +864,60 @@ export default function App() {
       }
     }
   };
+
+  // State to track which event IDs have triggered the 5-minute pre-alert
+  const [alertedEventIds, setAlertedEventIds] = useState<string[]>([]);
+
+  // 5-minute pre-start notification timer system for Show Timeline events
+  useEffect(() => {
+    const checkUpcomingEvents = () => {
+      const now = Date.now();
+      const fiveMinutesInMs = 5 * 60 * 1000;
+      
+      events.forEach(event => {
+        if (!event.startTime) return;
+        
+        const startTime = new Date(event.startTime).getTime();
+        const diff = startTime - now;
+        
+        // If event starts in 5 minutes (diff is between 0 and 5 minutes), and we haven't alerted yet
+        if (diff > 0 && diff <= fiveMinutesInMs) {
+          if (!alertedEventIds.includes(event.id)) {
+            // Mark as alerted
+            setAlertedEventIds(prev => [...prev, event.id]);
+
+            // 1. Browser-based Alert
+            window.alert(
+              `🔔 UPCOMING EVENT IN 5 MINUTES:\n\n` +
+              `Title: ${event.title}\n` +
+              `Time: ${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n` +
+              `Location: ${event.location}\n\n` +
+              `Please prepare systems accordingly.`
+            );
+
+            // 2. Add to in-app notifications
+            triggerAppNotification({
+              id: `alert-pre-${event.id}-${Date.now()}`,
+              title: `Upcoming Event: ${event.title}`,
+              message: `Event starts in 5 minutes at ${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} in ${event.location}.`,
+              timestamp: new Date().toISOString(),
+              type: 'ticket',
+              isRead: false
+            });
+
+            // 3. Log to System log
+            triggerSystemLog('Show Timeline', `Auto-notification triggered: "${event.title}" starts in 5 minutes.`, 'warn');
+          }
+        }
+      });
+    };
+
+    // Run check immediately and then every 10 seconds
+    checkUpcomingEvents();
+    const interval = setInterval(checkUpcomingEvents, 10000);
+
+    return () => clearInterval(interval);
+  }, [events, alertedEventIds]);
 
   // Simulation / Interactive States
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
@@ -2117,8 +2204,10 @@ export default function App() {
                 ty = 15 + ((hash * 7) % 60);
               }
 
-              const dx = tx - asset.coordinates.x;
-              const dy = ty - asset.coordinates.y;
+              const ax = asset.coordinates?.x !== undefined ? asset.coordinates.x : 50;
+              const ay = asset.coordinates?.y !== undefined ? asset.coordinates.y : 50;
+              const dx = tx - ax;
+              const dy = ty - ay;
               const dist = Math.sqrt(dx * dx + dy * dy);
 
               if (dist < minDistance) {
@@ -2233,6 +2322,29 @@ export default function App() {
 
       // Warn if battery falls below custom category threshold OR if the predicted runtime is less than 4 hours
       const isCritical = isMobile && asset.batteryLevel !== undefined && (asset.batteryLevel < threshold || predictedRuntimeHours < 4);
+
+      // Emergency recharge (predicted runtime is less than 30 minutes)
+      const isEmergency = isMobile && asset.batteryLevel !== undefined && predictedRuntimeHours < 0.5;
+      if (isEmergency) {
+        if (!asset.emergencyRecharge) {
+          // Trigger a push notification
+          triggerAppNotification({
+            id: `noti-battery-emergency-${asset.id}-${Date.now()}`,
+            title: '🚨 EMERGENCY RECHARGE REQUIRED 🚨',
+            message: `Emergency! Mobile asset "${asset.name}" (${asset.id}) predicted battery runtime has dropped to ${(predictedRuntimeHours * 60).toFixed(0)} minutes (below 30 minutes safety limit). Please swap or recharge immediately!`,
+            type: 'error',
+            isRead: false,
+            timestamp: new Date().toISOString()
+          });
+          // Update the asset in database
+          updateDoc(doc(db, 'assets', asset.id), { emergencyRecharge: true }).catch(console.error);
+        }
+      } else {
+        if (asset.emergencyRecharge) {
+          // Clear flag when battery is recovered/recharged
+          updateDoc(doc(db, 'assets', asset.id), { emergencyRecharge: false }).catch(console.error);
+        }
+      }
 
       if (isCritical) {
         if (!alertedBatteries.current[asset.id]) {
@@ -2851,6 +2963,15 @@ export default function App() {
     }
   };
 
+  const handleUpdateEvent = async (id: string, updates: Partial<ShowTimelineEvent>) => {
+    try {
+      await setDoc(doc(db, 'events', id), updates, { merge: true });
+      triggerSystemLog('Show Timeline', `Rescheduled timeline event ID: ${id}`, 'info');
+    } catch (err) {
+      console.error("Failed to update event:", err);
+    }
+  };
+
   const handleClearNotification = (id: string) => {
     setUnreadNotifications(prev => prev.filter(n => n.id !== id));
   };
@@ -3443,6 +3564,17 @@ export default function App() {
               </button>
 
               <button
+                id="nav-nvr"
+                onClick={() => { setActiveTab('nvr'); setActiveSearchFilter(''); }}
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+                  activeTab === 'nvr' ? 'bg-rose-600 text-white shadow-md' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                }`}
+              >
+                <Tv className="w-4 h-4" /> <span>NVRs & Cameras</span>
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Operational (Nominal)" />
+              </button>
+
+              <button
                 id="nav-assistant"
                 onClick={() => { setActiveTab('assistant'); setActiveSearchFilter(''); setIsAssistantOpen(true); }}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
@@ -3462,7 +3594,7 @@ export default function App() {
                   activeTab === 'user' ? 'bg-rose-600 text-white shadow-md' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
                 }`}
               >
-                <User className="w-4 h-4" /> <span>User Profile & Node</span>
+                <User className="w-4 h-4" /> <span>Profile</span>
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Operational (Nominal)" />
               </button>
 
@@ -4741,6 +4873,7 @@ export default function App() {
                                   events={events}
                                   onAddEvent={handleAddEvent}
                                   onDeleteEvent={handleDeleteEvent}
+                                  onUpdateEvent={handleUpdateEvent}
                                 />
                               </div>
                             );
@@ -5101,6 +5234,7 @@ export default function App() {
                     dropdowns={dropdowns}
                     onAddDropdownOption={handleAddDropdownOption}
                     onAssetClick={(a) => setViewingAsset(a)}
+                    onPrintReport={handlePrintReport}
                   />
                 )
               )}
@@ -5182,7 +5316,7 @@ export default function App() {
                 />
               )}
 
-              {/* 7. User Profile & Diagnostics */}
+              {/* 7. Profile */}
               {activeTab === 'user' && (
                 <UserProfile
                   preferences={sessionPreferences}
@@ -5232,6 +5366,24 @@ export default function App() {
                   preferences={sessionPreferences}
                   onAddPassword={handleAddPassword}
                   onDeletePassword={handleDeletePassword}
+                />
+              )}
+
+              {/* 9.1 NVRs & Cameras CCTV Section */}
+              {activeTab === 'nvr' && (
+                <NvrCameras 
+                  sessionUser={sessionUser} 
+                  addToast={(msg, type) => {
+                    triggerSystemLog('CCTV NVR System', msg, type === 'warn' ? 'warn' : type === 'success' ? 'success' : 'info');
+                    triggerAppNotification({
+                      id: `nvr-toast-${Date.now()}`,
+                      title: 'CCTV NVR Update',
+                      message: msg,
+                      timestamp: new Date().toISOString(),
+                      type: type === 'warn' ? 'error' : 'ticket',
+                      isRead: false
+                    });
+                  }}
                 />
               )}
 
@@ -5463,6 +5615,16 @@ export default function App() {
                   >
                     7d Compare Categories
                   </button>
+                  <button
+                    onClick={() => setExpandedModalTab('forecast')}
+                    className={`px-3 py-1.5 rounded-md font-bold uppercase transition-all cursor-pointer ${
+                      expandedModalTab === 'forecast' 
+                        ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' 
+                        : 'text-slate-400 hover:text-slate-200 border border-transparent'
+                    }`}
+                  >
+                    📈 7d Forecast
+                  </button>
                 </div>
                 <button
                   onClick={handleExportCSV}
@@ -5650,7 +5812,7 @@ export default function App() {
                     </table>
                   </div>
                 </div>
-              ) : (
+              ) : expandedModalTab === 'compare' ? (
                 /* Comparative Category Drain Chart over 7 Days */
                 <div className="bg-slate-950/60 p-4 border border-slate-850 rounded-2xl h-[354px] flex flex-col justify-between">
                   <div className="flex items-center justify-between mb-2">
@@ -5695,6 +5857,59 @@ export default function App() {
                       <Line type="monotone" dataKey="Projector" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} name="Projector" />
                       <Line type="monotone" dataKey="DMX" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} name="DMX" />
                       <Line type="monotone" dataKey="Switch" stroke="#ec4899" strokeWidth={2} dot={{ r: 3 }} name="Switch" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                /* 7-Day Battery Level Forecast Chart based on last 7 days consumption rate */
+                <div className="bg-slate-950/60 p-4 border border-slate-850 rounded-2xl h-[354px] flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-[11px] text-rose-400 font-bold font-mono uppercase tracking-wider flex items-center gap-2">
+                        📈 7-Day Battery Level Discharge Forecast
+                      </p>
+                      <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                        Projects future battery levels assuming 6 hours of daily usage based on last 7 days of consumption patterns.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-[9px] font-mono">
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]" /> Radio</span>
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" /> Speaker</span>
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" /> Pyrotechnics</span>
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" /> Projector</span>
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6]" /> DMX</span>
+                      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#ec4899]" /> Switch</span>
+                    </div>
+                  </div>
+                  <ResponsiveContainer width="100%" height="80%">
+                    <LineChart data={batteryForecast7d} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.5} />
+                      <XAxis 
+                        dataKey="dayLabel" 
+                        stroke="#475569" 
+                        fontSize={10} 
+                        tickLine={true}
+                        axisLine={true}
+                      />
+                      <YAxis 
+                        domain={[0, 100]} 
+                        stroke="#475569" 
+                        fontSize={10} 
+                        tickLine={true}
+                        axisLine={true}
+                        tickFormatter={(v) => `${v}%`}
+                      />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }}
+                        labelStyle={{ color: '#94a3b8', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold' }}
+                        itemStyle={{ fontSize: '10px', fontFamily: 'monospace' }}
+                      />
+                      <Line type="monotone" dataKey="Radio" stroke="#3b82f6" strokeWidth={2.5} dot={{ r: 4 }} name="Radio" />
+                      <Line type="monotone" dataKey="Speaker" stroke="#10b981" strokeWidth={2.5} dot={{ r: 4 }} name="Speaker" />
+                      <Line type="monotone" dataKey="Pyrotechnics" stroke="#ef4444" strokeWidth={2.5} dot={{ r: 4 }} name="Pyrotechnics" />
+                      <Line type="monotone" dataKey="Projector" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4 }} name="Projector" />
+                      <Line type="monotone" dataKey="DMX" stroke="#8b5cf6" strokeWidth={2.5} dot={{ r: 4 }} name="DMX" />
+                      <Line type="monotone" dataKey="Switch" stroke="#ec4899" strokeWidth={2.5} dot={{ r: 4 }} name="Switch" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -6065,7 +6280,7 @@ export default function App() {
                     <div className="space-y-2">
                       <h3 className="text-xs font-bold text-slate-900 uppercase font-mono">Logistics Overview Statement</h3>
                       <p className="text-xs text-slate-600 leading-relaxed">
-                        All physical sub-surface lake speakers, fireworks trigger systems, Auckland backdrop castles, and DMX projection towers are synced to the local telemetry mesh. The geofenced stage limits [20% - 80%] are continuously monitored. Currently, <strong className="text-slate-900">{assets.filter(a => a.isHighValue && (a.coordinates.x < 20 || a.coordinates.x > 80 || a.coordinates.y < 20 || a.coordinates.y > 80)).length} geofence breaches</strong> are noted.
+                        All physical sub-surface lake speakers, fireworks trigger systems, Auckland backdrop castles, and DMX projection towers are synced to the local telemetry mesh. The geofenced stage limits [20% - 80%] are continuously monitored. Currently, <strong className="text-slate-900">{assets.filter(a => a.isHighValue && a.coordinates && (a.coordinates.x < 20 || a.coordinates.x > 80 || a.coordinates.y < 20 || a.coordinates.y > 80)).length} geofence breaches</strong> are noted.
                       </p>
                     </div>
                   </div>
@@ -6255,7 +6470,7 @@ export default function App() {
                 </div>
                 <div>
                   <span className="text-[9px] text-slate-400 uppercase font-mono block">Geofence Violations:</span>
-                  <span className="font-mono font-bold text-rose-600">{assets.filter(a => a.isHighValue && (a.coordinates.x < 20 || a.coordinates.x > 80 || a.coordinates.y < 20 || a.coordinates.y > 80)).length} Breaches</span>
+                  <span className="font-mono font-bold text-rose-600">{assets.filter(a => a.isHighValue && a.coordinates && (a.coordinates.x < 20 || a.coordinates.x > 80 || a.coordinates.y < 20 || a.coordinates.y > 80)).length} Breaches</span>
                 </div>
               </div>
 
